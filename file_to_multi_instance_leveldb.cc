@@ -3,6 +3,8 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 #include "leveldb/comparator.h"
@@ -24,11 +26,27 @@ int str2int(const std::string &str) {
   return n;
 }
 
-int main() {
-  leveldb::DB* db;
+int main(int argc, char** argv) {
+  // const params
+  const int single_instance_size = 200000;
+
+  std::string multi_instance_ldb_dir;
+  if (argc > 1) {
+    // TODO
+    multi_instance_ldb_dir = argv[1];
+  } else {
+    multi_instance_ldb_dir = "/tmp/test_file_to_multi_instance_leveldb/1";
+  }
+
+  std::string multi_instance_ldb_base_dir = multi_instance_ldb_dir.substr(0, multi_instance_ldb_dir.rfind('/'));
+  mkdir(multi_instance_ldb_base_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+  // leveldb config
   leveldb::Options options;
   options.create_if_missing = true;
-  leveldb::Status status = leveldb::DB::Open(options, "/tmp/test_file_to_single_instance_leveldb", &db);
+
+  leveldb::DB* db;
+  leveldb::Status status = leveldb::DB::Open(options, multi_instance_ldb_dir, &db);
   assert(status.ok());
 
   std::string ifile("data/global_activity.csv");
@@ -39,11 +57,14 @@ int main() {
     return -1;
   }
 
-  std::string line, key;
+  std::string line, key, value;
+  int delimiter_idx;
   leveldb::WriteBatch batch;
   while (getline(infile, line)) {
-    key = line.substr(0, line.find('\t'));
-    batch.Put(key, line);
+    delimiter_idx = line.find('\t');
+    key = line.substr(0, delimiter_idx);
+    value = line.substr(delimiter_idx + 1);
+    batch.Put(key, value);
   }
   status = db->Write(leveldb::WriteOptions(), &batch);
   assert(status.ok());
