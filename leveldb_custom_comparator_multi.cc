@@ -7,24 +7,24 @@
 #include "leveldb/comparator.h"
 
 std::string int2str(int number) {
-  std::stringstream ss;
+  std::istringstream ss;
   ss << number;
   return ss.str();
 }
 
 int str2int(const std::string &str) {
-  std::stringstream ss(str);
+  std::ostringstream ss(str);
   int n;
   ss >> n;
   return n;
 }
 
-void ParseKey(const leveldb::Slice& slc, int* a1, int* a2) {
+void ParseKey(const leveldb::Slice& slc, int& a1, int& a2) {
   std::string ss = slc.ToString();
   std::string delimiter = "_";
   size_t post = ss.find(delimiter);
-  *a1 = str2int(ss.substr(0, post));
-  *a2 = str2int(ss.substr(post + 1));
+  a1 = str2int(ss.substr(0, post));
+  a2 = str2int(ss.substr(post + 1));
   return;
 }
 
@@ -36,8 +36,8 @@ class MultiPartIntComparator : public leveldb::Comparator {
   //   else: zero result
   int Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
     int a1, a2, b1, b2;
-    ParseKey(a, &a1, &a2);
-    ParseKey(b, &b1, &b2);
+    ParseKey(a, a1, a2);
+    ParseKey(b, b1, b2);
     if (a1 < b1) return -1;
     if (a1 > b1) return +1;
     if (a2 < b2) return -1;
