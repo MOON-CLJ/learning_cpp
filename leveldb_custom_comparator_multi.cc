@@ -7,13 +7,13 @@
 #include "leveldb/comparator.h"
 
 std::string int2str(int number) {
-  std::istringstream ss;
+  std::ostringstream ss;
   ss << number;
   return ss.str();
 }
 
 int str2int(const std::string &str) {
-  std::ostringstream ss(str);
+  std::istringstream ss(str);
   int n;
   ss >> n;
   return n;
