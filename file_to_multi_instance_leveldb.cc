@@ -4,30 +4,16 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <boost/filesystem.hpp>
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 #include "leveldb/comparator.h"
-#include "boost/filesystem.hpp"
 
 using std::cerr;
 using std::cout;
 using std::endl;
 
-std::string int2str(int number) {
-  std::ostringstream ss;
-  ss << number;
-  return ss.str();
-}
-
-int str2int(const std::string &str) {
-  std::istringstream ss(str);
-  int n;
-  ss >> n;
-  return n;
-}
+namespace fs = boost::filesystem;
 
 int divide_to_multi_db(leveldb::DB*& db) {
   // const params
@@ -42,24 +28,54 @@ int divide_to_multi_db(leveldb::DB*& db) {
   return 0;
 }
 
-void mk_dir_if(const std::string& dir) {
-  cout << dir << endl;
-  int mkdir_status = mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  cout << mkdir_status << endl;
-  cout << errno << endl;
+bool init_dir(fs::path& dir) {
+  bool exists_if = fs::exists(dir);
+
+  if (!exists_if) {
+    bool create_status = fs::create_directory(dir);
+    assert(create_status);
+    cout << "create dir: " << dir.string() << endl;
+  }
+
+  return !exists_if;
+}
+
+int init_collection_current_log(std::string& log_str) {
+  std::string ofile(log_str);
+  std::ofstream outfile(ofile.c_str());
+  if (!outfile) {
+    cerr << "error: unable to open output file: "
+         << outfile << endl;
+    return -1;
+  } else {
+    cout << "create collection log: " << ofile << endl;
+    outfile.close();
+    return 0;
+  }
+}
+
+void loading_log() {
 }
 
 int main(int argc, char** argv) {
-  std::string ldb_base_dir = "/tmp/test_file_to_multi_instance_leveldb";
-  std::string current_collection = "global_activity";
+  std::string ldb_base_dir_str("/tmp/test_file_to_multi_instance_leveldb");
+  std::string current_collection_str("global_activity");
+  std::string collection_dir_str(ldb_base_dir_str + "/" + current_collection_str);
+  std::string log_name("CURRENT");
+  std::string collection_current_log_str(collection_dir_str + "/" + log_name);
+
+  fs::path ldb_base_dir(ldb_base_dir_str);
+  init_dir(ldb_base_dir);
+
+  fs::path collection_dir(collection_dir_str);
+  if (init_dir(collection_dir)) {
+    int init_log_status = init_collection_current_log(collection_current_log_str);
+    assert((init_log_status == 0));
+  }
+
   std::vector<std::string> multi_instance_dirs;
-
-  mk_dir_if(ldb_base_dir + "/" + current_collection);
   /*
-  std::string multi_instance_ldb_base_dir = multi_instance_ldb_dir.substr(0, multi_instance_ldb_dir.rfind('/'));
-  int mkdir_status = mkdir(multi_instance_ldb_base_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-  // leveldb config
+  / leveldb config
   leveldb::Options options;
   options.create_if_missing = true;
 
