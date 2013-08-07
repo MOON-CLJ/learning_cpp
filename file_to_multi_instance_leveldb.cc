@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 #include "leveldb/comparator.h"
@@ -56,8 +57,14 @@ int init_collection_current_log(const std::string& log_str) {
   }
 }
 
-//void loading_log(std::map<std::int, pair<std::string, std::string>>& no_range_map, std::string& log_str) {
-//}
+int loading_log(std::map<int, std::pair<std::string, int> >& no_range_map, std::fstream& log_file, int& max_ldb_no) {
+  return 0;
+}
+
+int logging(std::fstream& log_file, std::map<int, std::pair<std::string, int> >& no_range_map, int& ldb_no) {
+  log_file << ldb_no << " " << no_range_map[ldb_no].first << " " << no_range_map[ldb_no].second << endl;
+  return 0;
+}
 
 int main(int argc, char** argv) {
   std::string ldb_base_dir_str("/tmp/test_file_to_multi_instance_leveldb");
@@ -75,36 +82,22 @@ int main(int argc, char** argv) {
     assert((init_log_status == 0));
   }
 
-  //std::map<std::int, pair<std::string, std::string>> multi_instance_no_range_map;
+  std::map<int, std::pair<std::string, int> > multi_ldb_no_range_map;
   std::fstream current_log_file(collection_current_log_str.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
   if (!current_log_file) {
     cerr << "error: unable to open current log file: "
          << collection_current_log_str << endl;
     return -1;
   }
+  int max_ldb_no = 0;
+  loading_log(multi_ldb_no_range_map, current_log_file, max_ldb_no);
 
-  int log_file_pos, log_file_pos_end;
-  current_log_file.seekg(0, std::ifstream::end);
-  log_file_pos_end = current_log_file.tellg();
-  current_log_file.seekg(0, std::ifstream::beg);
-
-  std::string line;
-  while (getline(current_log_file, line)) {
-    log_file_pos = current_log_file.tellg();
-    current_log_file << "hehe" << endl;
-    if (log_file_pos_end == log_file_pos) break;
-    current_log_file.seekg(log_file_pos, std::ifstream::beg);
-  }
-  current_log_file.close();
-
-  // TODO 从log文件中初始化multi_instance_dirs
-  /*
-  / leveldb config
   leveldb::Options options;
   options.create_if_missing = true;
 
   leveldb::DB* db;
-  leveldb::Status status = leveldb::DB::Open(options, multi_instance_ldb_dir, &db);
+  std::string collection_sub_dir_str = collection_dir_str + "/" + boost::lexical_cast<std::string>(++max_ldb_no);
+  leveldb::Status status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
   assert(status.ok());
 
   std::string ifile("data/global_activity.csv");
@@ -115,6 +108,9 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  typedef std::map<int, std::pair<std::string, int> >::value_type multi_ldb_no_range_map_vtype;
+  multi_ldb_no_range_map.insert(multi_ldb_no_range_map_vtype(max_ldb_no, std::make_pair("", 0)));
+
   std::string line, key, value;
   int delimiter_idx;
   leveldb::WriteBatch batch;
@@ -123,15 +119,24 @@ int main(int argc, char** argv) {
     key = line.substr(0, delimiter_idx);
     value = line.substr(delimiter_idx + 1);
     batch.Put(key, value);
+    multi_ldb_no_range_map[max_ldb_no].second++;
     break;
   }
   status = db->Write(leveldb::WriteOptions(), &batch);
   assert(status.ok());
 
+  // get the fisrt key
+  leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
+  it->SeekToFirst();
+  multi_ldb_no_range_map[max_ldb_no].first = it->key().ToString();
+
+  // write to log
+  logging(current_log_file, multi_ldb_no_range_map, max_ldb_no);
   divide_to_multi_db(db);
+
   infile.close();
+  current_log_file.close();
   delete db;
-  */
 
   return 0;
 }
