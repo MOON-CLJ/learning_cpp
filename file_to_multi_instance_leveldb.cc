@@ -4,6 +4,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
+#include <utility>
 #include <boost/filesystem.hpp>
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
@@ -28,7 +30,7 @@ int divide_to_multi_db(leveldb::DB*& db) {
   return 0;
 }
 
-bool init_dir(fs::path& dir) {
+bool init_dir(const fs::path& dir) {
   bool exists_if = fs::exists(dir);
 
   if (!exists_if) {
@@ -40,7 +42,7 @@ bool init_dir(fs::path& dir) {
   return !exists_if;
 }
 
-int init_collection_current_log(std::string& log_str) {
+int init_collection_current_log(const std::string& log_str) {
   std::string ofile(log_str);
   std::ofstream outfile(ofile.c_str());
   if (!outfile) {
@@ -54,8 +56,8 @@ int init_collection_current_log(std::string& log_str) {
   }
 }
 
-void loading_log() {
-}
+//void loading_log(std::map<std::int, pair<std::string, std::string>>& no_range_map, std::string& log_str) {
+//}
 
 int main(int argc, char** argv) {
   std::string ldb_base_dir_str("/tmp/test_file_to_multi_instance_leveldb");
@@ -73,7 +75,29 @@ int main(int argc, char** argv) {
     assert((init_log_status == 0));
   }
 
-  std::vector<std::string> multi_instance_dirs;
+  //std::map<std::int, pair<std::string, std::string>> multi_instance_no_range_map;
+  std::fstream current_log_file(collection_current_log_str.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+  if (!current_log_file) {
+    cerr << "error: unable to open current log file: "
+         << collection_current_log_str << endl;
+    return -1;
+  }
+
+  int log_file_pos, log_file_pos_end;
+  current_log_file.seekg(0, std::ifstream::end);
+  log_file_pos_end = current_log_file.tellg();
+  current_log_file.seekg(0, std::ifstream::beg);
+
+  std::string line;
+  while (getline(current_log_file, line)) {
+    log_file_pos = current_log_file.tellg();
+    current_log_file << "hehe" << endl;
+    if (log_file_pos_end == log_file_pos) break;
+    current_log_file.seekg(log_file_pos, std::ifstream::beg);
+  }
+  current_log_file.close();
+
+  // TODO 从log文件中初始化multi_instance_dirs
   /*
   / leveldb config
   leveldb::Options options;
