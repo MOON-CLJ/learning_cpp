@@ -18,16 +18,55 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-int divide_to_multi_db(leveldb::DB*& db) {
-  // const params
-  const int single_instance_size = 200000;
-  leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
+typedef std::map<int, std::pair<std::string, int> > MetaMapByIdType;
+typedef MetaMapByIdType::value_type MetaMapByIdVtype;
 
-  for (it->SeekToFirst(); it->Valid(); it->Next())
-  {
-      std::cout << it->key().ToString() << " : " << it->value().ToString() << std::endl;
+int logging(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, const int& ldb_no, std::string action = "") {
+  if (action != "") log_file << action << " ";
+  log_file << ldb_no << " " << meta_map_by_id[ldb_no].first << " " << meta_map_by_id[ldb_no].second << endl;
+  return 0;
+}
+
+int divide_to_multi_db(leveldb::DB*& huge_db, std::string& huge_db_dir_str, MetaMapByIdType& meta_map_by_id, int& ldb_no, const leveldb::Options& options, const std::string& collection_dir_str, std::fstream& log_file) {
+  const int max_db_size = 400000;
+  const int per_db_size = max_db_size / 2;
+  int huge_db_size = meta_map_by_id[ldb_no].second;
+  int new_ldb_no = ldb_no; // TODO 目前默认ldb_no即为最大的no
+  leveldb::Iterator* it = huge_db->NewIterator(leveldb::ReadOptions());
+  it->SeekToFirst();
+
+  if (huge_db_size <= max_db_size) return 0;
+  while (huge_db_size > 0) {
+    new_ldb_no++;
+    std::string collection_sub_dir_str = collection_dir_str + "/" + boost::lexical_cast<std::string>(new_ldb_no);
+    leveldb::DB* db;
+    leveldb::Status status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
+    assert(status.ok());
+
+    int i = 0;
+    leveldb::WriteBatch batch;
+    meta_map_by_id.insert(MetaMapByIdVtype(new_ldb_no, std::make_pair(it->key().ToString(), 0)));
+    while (i < per_db_size && it->Valid()) {
+      batch.Put(it->key(), it->value());
+      it->Next();
+      i++;
+      meta_map_by_id[new_ldb_no].second++;
+    }
+    huge_db_size -= meta_map_by_id[new_ldb_no].second;
+    status = db->Write(leveldb::WriteOptions(), &batch);
+    assert(status.ok());
+    delete db;
+
+    // logging
+    logging(log_file, meta_map_by_id, new_ldb_no);
   }
 
+  // rm huge db dir
+  fs::path huge_db_path(huge_db_dir_str);
+  int rm_file_count = fs::remove_all(huge_db_path);
+  assert(rm_file_count);
+  logging(log_file, meta_map_by_id, ldb_no, "-");
+  ldb_no = new_ldb_no;
   return 0;
 }
 
@@ -57,12 +96,7 @@ int init_collection_current_log(const std::string& log_str) {
   }
 }
 
-int loading_log(std::map<int, std::pair<std::string, int> >& no_range_map, std::fstream& log_file, int& max_ldb_no) {
-  return 0;
-}
-
-int logging(std::fstream& log_file, std::map<int, std::pair<std::string, int> >& no_range_map, int& ldb_no) {
-  log_file << ldb_no << " " << no_range_map[ldb_no].first << " " << no_range_map[ldb_no].second << endl;
+int loading_log(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, int& max_ldb_no) {
   return 0;
 }
 
@@ -82,7 +116,8 @@ int main(int argc, char** argv) {
     assert((init_log_status == 0));
   }
 
-  std::map<int, std::pair<std::string, int> > multi_ldb_no_range_map;
+  MetaMapByIdType meta_map_by_id;
+  std::map<std::string, int> meta_map_by_lrange;
   std::fstream current_log_file(collection_current_log_str.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
   if (!current_log_file) {
     cerr << "error: unable to open current log file: "
@@ -90,7 +125,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   int max_ldb_no = 0;
-  loading_log(multi_ldb_no_range_map, current_log_file, max_ldb_no);
+  loading_log(current_log_file, meta_map_by_id, max_ldb_no);
 
   leveldb::Options options;
   options.create_if_missing = true;
@@ -108,9 +143,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  typedef std::map<int, std::pair<std::string, int> >::value_type multi_ldb_no_range_map_vtype;
-  multi_ldb_no_range_map.insert(multi_ldb_no_range_map_vtype(max_ldb_no, std::make_pair("", 0)));
-
+  meta_map_by_id.insert(MetaMapByIdVtype(max_ldb_no, std::make_pair("", 0)));
   std::string line, key, value;
   int delimiter_idx;
   leveldb::WriteBatch batch;
@@ -119,8 +152,7 @@ int main(int argc, char** argv) {
     key = line.substr(0, delimiter_idx);
     value = line.substr(delimiter_idx + 1);
     batch.Put(key, value);
-    multi_ldb_no_range_map[max_ldb_no].second++;
-    break;
+    meta_map_by_id[max_ldb_no].second++;
   }
   status = db->Write(leveldb::WriteOptions(), &batch);
   assert(status.ok());
@@ -128,11 +160,12 @@ int main(int argc, char** argv) {
   // get the fisrt key
   leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
-  multi_ldb_no_range_map[max_ldb_no].first = it->key().ToString();
+  meta_map_by_id[max_ldb_no].first = it->key().ToString();
+  meta_map_by_lrange.insert(std::map<std::string, int>::value_type(it->key().ToString(), max_ldb_no));
 
   // write to log
-  logging(current_log_file, multi_ldb_no_range_map, max_ldb_no);
-  divide_to_multi_db(db);
+  logging(current_log_file, meta_map_by_id, max_ldb_no);
+  divide_to_multi_db(db, collection_sub_dir_str, meta_map_by_id, max_ldb_no, options, collection_dir_str, current_log_file);
 
   infile.close();
   current_log_file.close();
