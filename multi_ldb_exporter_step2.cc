@@ -22,6 +22,8 @@ namespace fs = boost::filesystem;
 
 typedef std::map<int, leveldb::DB*> DbMapByIdType;
 typedef DbMapByIdType::value_type DbMapByIdVtype;
+typedef std::map<int, leveldb::WriteBatch> BatchMapByIdType;
+typedef BatchMapByIdType::value_type BatchMapByIdVtype;
 
 void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_map_by_lrange, std::fstream& log_file) {
   int ldb_no, count;
@@ -46,6 +48,7 @@ void load_multi_db(DbMapByIdType& db_map_by_id, const MetaMapByIdType& meta_map_
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
   int ldb_no;
   leveldb::Status status;
+
   while (map_it != meta_map_by_id.end()) {
     ldb_no = map_it->first;
     leveldb::DB* db;
@@ -65,10 +68,42 @@ void close_multi_db(DbMapByIdType& db_map_by_id) {
 }
 
 void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, const MetaMapByLrgVtype& meta_map_by_lrange, std::ifstream& infile) {
-  update_meta_map(meta_map_by_id);
-}
+  std::string line, key, value;
+  int delimiter_idx;
+  BatchMapByIdType batch_map_by_id;
+  DbMapByIdType::iterator db_map_it = db_map_by_id.begin();
+  while (db_map_it != db_map_by_id.end()) {
+    leveldb::WriteBatch batch;
+    batch_map_by_id.insert(BatchMapByIdVtype(db_map_it->first, batch));
+  }
+  // 处理小于所有范围的情况
 
-void update_meta_map(const MetaMapByIdType& meta_map_by_id) {
+  while (getline(infile, line)) {
+    delimiter_idx = line.find('\t');
+    key = line.substr(0, delimiter_idx);
+    value = line.substr(delimiter_idx + 1);
+
+    int ldb_no = -1;
+    MetaMapByLrgType::iterator meta_map_it = meta_map_by_lrange.begin();
+    while (meta_map_it != meta_map_by_lrange.end()) {
+      if (key < meta_map_it->first) {
+        ldb_no = meta_map_it->second;
+        break;
+      }
+    }
+
+    if (ldb_no == -1) {
+    }
+
+    // add new db
+    // in the range
+    while (key )
+    batch.Put(key, value);
+    meta_map_by_id[ldb_no].second++;
+  }
+
+  leveldb::Status status = db->Write(leveldb::WriteOptions(), &batch);
+  assert(status.ok());
 }
 
 int main(int argc, char** argv) {
