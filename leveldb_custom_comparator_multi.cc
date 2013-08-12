@@ -6,9 +6,9 @@
 #include "leveldb/write_batch.h"
 #include "leveldb/comparator.h"
 
-std::string int2str(int number) {
+std::string int2str(int num) {
   std::ostringstream ss;
-  ss << number;
+  ss << num;
   return ss.str();
 }
 
