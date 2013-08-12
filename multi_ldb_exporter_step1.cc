@@ -2,8 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <map>
-#include <utility>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
