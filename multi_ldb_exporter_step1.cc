@@ -11,6 +11,10 @@
 #include "leveldb/write_batch.h"
 #include "leveldb/comparator.h"
 
+#include "constants.h"
+#include "comparators.h"
+#include "utils.h"
+
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -19,16 +23,6 @@ namespace fs = boost::filesystem;
 
 typedef std::map<int, std::pair<std::string, int> > MetaMapByIdType;
 typedef MetaMapByIdType::value_type MetaMapByIdVtype;
-
-const std::string ldbBaseDir("/tmp/test_file_to_multi_instance_leveldb");
-const std::string logName("CURRENT");
-const int maxDbSize = 400000;
-const int perDbSize = maxDbSize / 2;
-
-void logging(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, const int& ldb_no, std::string action = "") {
-  if (action != "") log_file << action << " ";
-  log_file << ldb_no << " " << meta_map_by_id[ldb_no].first << " " << meta_map_by_id[ldb_no].second << endl;
-}
 
 void write_to_single_db(leveldb::DB*& db, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, int& max_ldb_no) {
   meta_map_by_id.insert(MetaMapByIdVtype(max_ldb_no, std::make_pair("", 0)));
@@ -54,9 +48,11 @@ void write_to_single_db(leveldb::DB*& db, MetaMapByIdType& meta_map_by_id, std::
 
 void divide_to_multi_db(leveldb::DB*& huge_db, std::string& huge_db_dir_str, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, const std::string& collectionDir, std::fstream& log_file) {
   int new_ldb_no = max_ldb_no;
+  NumericComparator cmp;
   leveldb::Options options;
-  leveldb::Status status;
+  options.comparator = &cmp;
   options.create_if_missing = true;
+  leveldb::Status status;
   leveldb::Iterator* it = huge_db->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
 
@@ -128,7 +124,9 @@ int main(int argc, char** argv) {
          << logStr << endl;
 
   int max_ldb_no = 0;
+  NumericComparator cmp;
   leveldb::Options options;
+  options.comparator = &cmp;
   options.create_if_missing = true;
 
   leveldb::DB* db;
