@@ -9,7 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
-#include "leveldb/comparator.h"
 
 #include "constants.h"
 #include "comparators.h"

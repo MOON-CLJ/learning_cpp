@@ -5,13 +5,12 @@
 #include "comparators.h"
 
 int NumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
-  int a1, b1;
-  a1 = boost::lexical_cast<int>(a.ToString());
-  b1 = boost::lexical_cast<int>(b.ToString());
-  if (a1 < b1) return -1;
-  if (a1 > b1) return 1;
-
-  return 0;
+  size_t a_len, b_len;
+  a_len = a.size();
+  b_len = b.size();
+  if (a_len < b_len) return -1;
+  if (a_len > b_len) return 1;
+  return a.compare(b);
 }
 
 const char* NumericComparator::Name() const { return "NumericComparator"; }
