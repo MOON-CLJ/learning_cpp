@@ -20,9 +20,6 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-typedef std::map<int, std::pair<std::string, int> > MetaMapByIdType;
-typedef MetaMapByIdType::value_type MetaMapByIdVtype;
-
 void write_to_single_db(leveldb::DB*& db, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, int& max_ldb_no) {
   meta_map_by_id.insert(MetaMapByIdVtype(max_ldb_no, std::make_pair("", 0)));
 
@@ -86,7 +83,7 @@ void divide_to_multi_db(leveldb::DB*& huge_db, std::string& huge_db_dir_str, Met
   status = leveldb::DestroyDB(huge_db_dir_str, options);
   cout << "destroy db: " << huge_db_dir_str << endl;
   assert(status.ok());
-  logging(log_file, meta_map_by_id, max_ldb_no, "-");
+  logging(log_file, meta_map_by_id, max_ldb_no, "-1");
   max_ldb_no = new_ldb_no;
 }
 
