@@ -2,7 +2,6 @@
 #define CONSTANTS_H_
 
 #include <string>
-#include <string>
 #include <map>
 #include <utility>
 

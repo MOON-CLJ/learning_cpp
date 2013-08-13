@@ -25,7 +25,7 @@ typedef DbMapByIdType::value_type DbMapByIdVtype;
 typedef std::map<int, leveldb::WriteBatch> BatchMapByIdType;
 typedef BatchMapByIdType::value_type BatchMapByIdVtype;
 
-void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_map_by_lrange, std::fstream& log_file) {
+void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_map_by_lrange, int& max_ldb_no, std::fstream& log_file) {
   int ldb_no, count;
   std::string lrange;
 
@@ -41,17 +41,22 @@ void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_
       meta_map_by_id.insert(MetaMapByIdVtype(ldb_no, std::make_pair(lrange, count)));
       meta_map_by_lrange.insert(MetaMapByLrgVtype(lrange, ldb_no));
     }
+    if (ldb_no > max_ldb_no)
+      max_ldb_no = ldb_no;
   }
 }
 
 void load_multi_db(DbMapByIdType& db_map_by_id, const MetaMapByIdType& meta_map_by_id, const std::string& collectionDir) {
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
-  int ldb_no;
+  NumericComparator cmp;
+  leveldb::Options options;
+  options.comparator = &cmp;
+  options.create_if_missing = true;
   leveldb::Status status;
 
   while (map_it != meta_map_by_id.end()) {
-    ldb_no = map_it->first;
     leveldb::DB* db;
+    int ldb_no = map_it->first;
     std::string collection_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
     status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
     assert(status.ok());
@@ -62,48 +67,83 @@ void load_multi_db(DbMapByIdType& db_map_by_id, const MetaMapByIdType& meta_map_
 
 void close_multi_db(DbMapByIdType& db_map_by_id) {
   DbMapByIdType::iterator map_it = db_map_by_id.begin();
-  while (map_it != db_map_by_id.end()) {
+  while (map_it != db_map_by_id.end())
     delete map_it->second;
-  }
 }
 
-void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, const MetaMapByLrgVtype& meta_map_by_lrange, std::ifstream& infile) {
+void update_to_over_lrange_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, MetaMapByLrgVtype& meta_map_by_lrange, std::fstream& log_file) {
+
+}
+
+void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, MetaMapByLrgVtype& meta_map_by_lrange, std::fstream& log_file, std::ifstream& infile) {
+  // 准备WriteBatch
   std::string line, key, value;
   int delimiter_idx;
   BatchMapByIdType batch_map_by_id;
-  DbMapByIdType::iterator db_map_it = db_map_by_id.begin();
-  while (db_map_it != db_map_by_id.end()) {
+  DbMapByIdType::iterator map_it1 = db_map_by_id.begin();
+  while (map_it1 != db_map_by_id.end()) {
     leveldb::WriteBatch batch;
-    batch_map_by_id.insert(BatchMapByIdVtype(db_map_it->first, batch));
+    batch_map_by_id.insert(BatchMapByIdVtype(map_it1 -> first, batch));
   }
-  // 处理小于所有范围的情况
 
+  // 准备小于所有lrange的WriteBatch和count
+  leveldb::WriteBatch over_lrange_batch;
+  int over_lrange_count = 0;
+
+  // 更新数据到相应batch
   while (getline(infile, line)) {
     delimiter_idx = line.find('\t');
     key = line.substr(0, delimiter_idx);
     value = line.substr(delimiter_idx + 1);
 
-    int ldb_no = -1;
-    MetaMapByLrgType::iterator meta_map_it = meta_map_by_lrange.begin();
-    while (meta_map_it != meta_map_by_lrange.end()) {
-      if (key < meta_map_it->first) {
-        ldb_no = meta_map_it->second;
+    MetaMapByLrgType::iterator map_it2 = meta_map_by_lrange.begin();
+    int last_ldb_no = -1;
+    int ldb_no = map_it2->second;
+    while (map_it2 != meta_map_by_lrange.end()) {
+      if (key < map_it2->first) {
+        last_ldb_no = ldb_no;
+        ldb_no = map_it2->second;
         break;
       }
     }
 
-    if (ldb_no == -1) {
+    if (last_ldb_no == -1) {
+      over_lrange_batch.Put(key, value);
+      over_lrange_count++;
+    } else {
+      batch_map_by_id[last_ldb_no].Put(key, value);
+      meta_map_by_id[last_ldb_no]->second++;
     }
-
-    // add new db
-    // in the range
-    while (key )
-    batch.Put(key, value);
-    meta_map_by_id[ldb_no].second++;
   }
 
-  leveldb::Status status = db->Write(leveldb::WriteOptions(), &batch);
-  assert(status.ok());
+  // 更新batch到leveldb
+  leveldb::Status status;
+  map_it1 = db_map_by_id.begin();
+  while (map_it1 != db_map_by_id.end()) {
+    status = (map_it1->second)->Write(leveldb::WriteOptions(), &batch_map_by_id[map_it1->first]);
+    assert(status.ok());
+  }
+
+  // 更新小于所有lrange的数据到新的leveldb中，并维护db_map_by_id, meta_map_by_id, max_ldb_no, meta_map_by_lrange, log_file
+  if (over_lrange_count > 0) {
+    NumericComparator cmp;
+    leveldb::Options options;
+    options.comparator = &cmp;
+    options.create_if_missing = true;
+    leveldb::DB* db;
+    std::string collection_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(++max_ldb_no);
+    status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
+    assert(status.ok());
+
+    status = db->Write(leveldb::WriteOptions(), &over_lrange_batch);
+    assert(status.ok());
+
+    // 更新db_map_by_id
+    db_map_by_id.insert(DbMapByIdVtype(max_ldb_no, db));
+
+    // 更新meta_map_by_id
+    // logging
+  }
 }
 
 int main(int argc, char** argv) {
@@ -126,7 +166,8 @@ int main(int argc, char** argv) {
 
   MetaMapByIdType meta_map_by_id;
   MetaMapByLrgType meta_map_by_lrange;
-  load_meta_from_log(meta_map_by_id, meta_map_by_lrange, log_file);
+  int max_ldb_no = 0;
+  load_meta_from_log(meta_map_by_id, meta_map_by_lrange, max_ldb_no, log_file);
   DbMapByIdType db_map_by_id;
   load_multi_db(db_map_by_id, meta_map_by_id, collectionDir);
 
@@ -138,7 +179,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  update_to_multi_db(db_map_by_id, meta_map_by_lrange, infile);
+  update_to_multi_db(db_map_by_id, meta_map_by_id, max_ldb_no, meta_map_by_lrange, log_file, infile);
 
   close_multi_db(db_map_by_id);
   infile.close();
