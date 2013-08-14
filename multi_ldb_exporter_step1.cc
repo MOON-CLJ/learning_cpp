@@ -18,7 +18,19 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-void write_to_single_db(leveldb::DB*& db, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no) {
+void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no, const std::string& collectionDir) {
+  cout << "hehe" << endl;
+  NumericComparator cmp;
+  leveldb::Options options;
+  options.comparator = &cmp;
+  options.create_if_missing = true;
+
+  leveldb::DB* db;
+  std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
+  leveldb::Status status = leveldb::DB::Open(options, db_dir_str, &db);
+  assert(status.ok());
+
+  db_map_by_id.insert(DbMapByIdVtype(ldb_no, db));
   meta_map_by_id.insert(MetaMapByIdVtype(ldb_no, std::make_pair("", 0)));
 
   std::string line, key, value;
@@ -31,58 +43,15 @@ void write_to_single_db(leveldb::DB*& db, MetaMapByIdType& meta_map_by_id, std::
     batch.Put(key, value);
     meta_map_by_id[ldb_no].second++;
   }
-  leveldb::Status status = db->Write(leveldb::WriteOptions(), &batch);
+  status = db_map_by_id[ldb_no]->Write(leveldb::WriteOptions(), &batch);
   assert(status.ok());
 
   // get the fisrt key
   leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
   meta_map_by_id[ldb_no].first = it->key().ToString();
-}
 
-void divide_to_multi_db(leveldb::DB*& huge_db, std::string& huge_db_dir_str, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, const std::string& collectionDir, std::fstream& log_file) {
-  int new_ldb_no = max_ldb_no;
-  NumericComparator cmp;
-  leveldb::Options options;
-  options.comparator = &cmp;
-  options.create_if_missing = true;
-  leveldb::Status status;
-  leveldb::Iterator* it = huge_db->NewIterator(leveldb::ReadOptions());
-  it->SeekToFirst();
-
-  int huge_db_size = meta_map_by_id[max_ldb_no].second;
-  if (huge_db_size <= maxDbSize) return;
-  while (it->Valid()) {
-    std::string colt_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(++new_ldb_no);
-    leveldb::DB* db;
-    status = leveldb::DB::Open(options, colt_sub_dir_str, &db);
-    assert(status.ok());
-
-    int i = 0;
-    leveldb::WriteBatch batch;
-    meta_map_by_id.insert(MetaMapByIdVtype(new_ldb_no, std::make_pair(it->key().ToString(), 0)));
-    while (i < perDbSize && it->Valid()) {
-      batch.Put(it->key(), it->value());
-      it->Next();
-      i++;
-      meta_map_by_id[new_ldb_no].second++;
-    }
-    status = db->Write(leveldb::WriteOptions(), &batch);
-    assert(status.ok());
-    delete db;
-    cout << "write to db [ " << new_ldb_no << " ]" << endl;
-
-    // logging
-    logging(log_file, meta_map_by_id, new_ldb_no);
-  }
-
-  // destroy huge db
-  delete huge_db;
-  status = leveldb::DestroyDB(huge_db_dir_str, options);
-  cout << "destroy db [ " << max_ldb_no << " ]" << endl;
-  assert(status.ok());
-  logging(log_file, meta_map_by_id, max_ldb_no, "-1");
-  max_ldb_no = new_ldb_no;
+  cout << "hehe" << endl;
 }
 
 bool init_dir(const fs::path& path) {
@@ -117,17 +86,6 @@ int main(int argc, char** argv) {
     cout << "create log: "
          << logStr << endl;
 
-  NumericComparator cmp;
-  leveldb::Options options;
-  options.comparator = &cmp;
-  options.create_if_missing = true;
-
-  leveldb::DB* db;
-  int max_ldb_no = 1;
-  std::string collection_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(max_ldb_no);
-  leveldb::Status status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
-  assert(status.ok());
-
   std::string ifile("data/global_activity.csv");
   std::ifstream infile(ifile.c_str());
   if (!infile) {
@@ -136,12 +94,18 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  int max_ldb_no = 1;
+  DbMapByIdType db_map_by_id;
   MetaMapByIdType meta_map_by_id;
-  write_to_single_db(db, meta_map_by_id, infile, max_ldb_no);
+  write_to_single_db(db_map_by_id, meta_map_by_id, infile, max_ldb_no, collectionDir);
   infile.close();
   cout << "write to db [ " << max_ldb_no << " ]" << endl;
   logging(log_file, meta_map_by_id, max_ldb_no);
-  divide_to_multi_db(db, collection_sub_dir_str, meta_map_by_id, max_ldb_no, collectionDir, log_file);
+
+  int old_max_ldb_no = max_ldb_no;
+  divide_to_multi_db(db_map_by_id, max_ldb_no, meta_map_by_id, log_file, collectionDir);
+  close_all_mapped_db(db_map_by_id);
+  destroy_large_db(log_file, meta_map_by_id, old_max_ldb_no, collectionDir);
 
   log_file.close();
   cout << "export done! detail: " << logStr << endl;

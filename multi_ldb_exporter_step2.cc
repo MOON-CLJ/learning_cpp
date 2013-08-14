@@ -21,11 +21,6 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-typedef std::map<int, leveldb::DB*> DbMapByIdType;
-typedef DbMapByIdType::value_type DbMapByIdVtype;
-typedef std::map<int, leveldb::WriteBatch> BatchMapByIdType;
-typedef BatchMapByIdType::value_type BatchMapByIdVtype;
-
 void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_map_by_lrange, int& max_ldb_no, std::fstream& log_file) {
   int ldb_no, count;
   std::string lrange, line;
@@ -124,6 +119,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
   while (map_it1 != db_map_by_id.end()) {
     status = (map_it1->second)->Write(leveldb::WriteOptions(), &batch_map_by_id[map_it1->first]);
     assert(status.ok());
+    cout << "update to sub db: " << map_it1->first << endl;
     ++map_it1;
   }
 
@@ -140,6 +136,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
 
     status = db->Write(leveldb::WriteOptions(), &over_lrange_batch);
     assert(status.ok());
+    cout << "update to over range db: " << max_ldb_no << endl;
 
     // 更新db_map_by_id
     db_map_by_id.insert(DbMapByIdVtype(max_ldb_no, db));
@@ -156,7 +153,6 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
   }
 
   // TODO 更新后检查各db，并将过大db进行拆分
-  // check_and_divide_large_ldb();
 }
 
 int main(int argc, char** argv) {
