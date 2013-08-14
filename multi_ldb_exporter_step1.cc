@@ -18,18 +18,16 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
+NumericComparator cmp;
 void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no, const std::string& collectionDir) {
-  NumericComparator cmp;
   leveldb::Options options;
   options.comparator = &cmp;
   options.create_if_missing = true;
 
   leveldb::DB* db;
-  {
-    std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
-    leveldb::Status status = leveldb::DB::Open(options, db_dir_str, &db);
-    assert(status.ok());
-  }
+  std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
+  leveldb::Status status = leveldb::DB::Open(options, db_dir_str, &db);
+  assert(status.ok());
 
   db_map_by_id.insert(DbMapByIdVtype(ldb_no, db));
   meta_map_by_id.insert(MetaMapByIdVtype(ldb_no, std::make_pair("", 0)));
@@ -44,20 +42,13 @@ void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
     batch.Put(key, value);
     meta_map_by_id[ldb_no].second++;
   }
-  leveldb::Status status = db_map_by_id[ldb_no]->Write(leveldb::WriteOptions(), &batch);
+  status = db_map_by_id[ldb_no]->Write(leveldb::WriteOptions(), &batch);
   assert(status.ok());
 
   // get the fisrt key
   leveldb::Iterator* it = db_map_by_id[ldb_no]->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
   meta_map_by_id[ldb_no].first = it->key().ToString();
-  int i = 0;
-  while (it->Valid() && i < 10) {
-    cout << it->key().ToString() << endl;
-    it->Next();
-    i++;
-  }
-
 }
 
 bool init_dir(const fs::path& path) {
@@ -104,17 +95,6 @@ int main(int argc, char** argv) {
   DbMapByIdType db_map_by_id;
   MetaMapByIdType meta_map_by_id;
   write_to_single_db(db_map_by_id, meta_map_by_id, infile, max_ldb_no, collectionDir);
-
-  cout << "hehe" << endl;
-  leveldb::Iterator* it = db_map_by_id[max_ldb_no]->NewIterator(leveldb::ReadOptions());
-  it->SeekToFirst();
-  int i = 0;
-  while (it->Valid() && i < 10) {
-    cout << it->key().ToString() << endl;
-    it->Next();
-    i++;
-  }
-  cout << "hehe" << endl;
 
   infile.close();
   cout << "write to db [ " << max_ldb_no << " ]" << endl;
