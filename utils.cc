@@ -62,7 +62,7 @@ void divide_to_multi_db(DbMapByIdType& db_map_by_id, int& max_ldb_no, MetaMapByI
     leveldb::WriteBatch batch;
     meta_map_by_id.insert(MetaMapByIdVtype(max_ldb_no, std::make_pair(it->key().ToString(), 0)));
     int i = 0;
-    while (i < perDbSize && it->Valid()) {
+    while (it->Valid() && i < perDbSize) {
       batch.Put(it->key(), it->value());
       it->Next();
       i++;
