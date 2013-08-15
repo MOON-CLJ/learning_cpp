@@ -26,20 +26,24 @@ void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_
   int ldb_no, count;
   std::string lrange, line;
 
+  log_file.seekg(0, std::iostream::beg);
   while (getline(log_file, line)) {
     std::istringstream stream(line);
     stream >> ldb_no;
     if (ldb_no == -1) {
       stream >> ldb_no >> lrange;
       meta_map_by_id.erase(ldb_no);
-      meta_map_by_lrange.erase(lrange);
     } else {
       stream >> lrange >> count;
       meta_map_by_id.insert(MetaMapByIdVtype(ldb_no, std::make_pair(lrange, count)));
-      meta_map_by_lrange.insert(MetaMapByLrgVtype(lrange, ldb_no));
+      if (ldb_no > max_ldb_no)
+        max_ldb_no = ldb_no;
     }
-    if (ldb_no > max_ldb_no)
-      max_ldb_no = ldb_no;
+  }
+  MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
+  while (map_it != meta_map_by_id.end()) {
+    meta_map_by_lrange.insert(MetaMapByLrgVtype((map_it->second).first, map_it->first));
+    ++map_it;
   }
 }
 
@@ -73,6 +77,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
   int over_lrange_count = 0;
 
   // 更新数据到相应batch
+  MetaMapByIdType old_meta_map_by_id(meta_map_by_id);
   int delimiter_idx;
   std::string line, key, value;
   while (getline(infile, line)) {
@@ -80,24 +85,20 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
     key = line.substr(0, delimiter_idx);
     value = line.substr(delimiter_idx + 1);
 
+    int ldb_no = -1;
     MetaMapByLrgType::iterator map_it2 = meta_map_by_lrange.begin();
-    int last_ldb_no = -1;
-    int ldb_no = map_it2->second;
     while (map_it2 != meta_map_by_lrange.end()) {
-      if (key < map_it2->first) {
-        last_ldb_no = ldb_no;
+      if (key < map_it2->first) break;
       ldb_no = map_it2->second;
-        break;
-      }
       ++map_it2;
     }
 
-    if (last_ldb_no == -1) {
+    if (ldb_no == -1) {
       over_lrange_batch.Put(key, value);
       over_lrange_count++;
     } else {
-      batch_map_by_id[last_ldb_no].Put(key, value);
-      meta_map_by_id[last_ldb_no].second++;
+      batch_map_by_id[ldb_no].Put(key, value);
+      meta_map_by_id[ldb_no].second++;
     }
   }
 
@@ -105,9 +106,11 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
   leveldb::Status status;
   map_it1 = db_map_by_id.begin();
   while (map_it1 != db_map_by_id.end()) {
-    status = (map_it1->second)->Write(leveldb::WriteOptions(), &batch_map_by_id[map_it1->first]);
-    assert(status.ok());
-    cout << "update to sub db: " << map_it1->first << endl;
+    if (meta_map_by_id[map_it1->first].second > old_meta_map_by_id[map_it1->first].second) {
+      status = (map_it1->second)->Write(leveldb::WriteOptions(), &batch_map_by_id[map_it1->first]);
+      assert(status.ok());
+      cout << "update to db: " << map_it1->first << endl;
+    }
     ++map_it1;
   }
 
@@ -180,18 +183,18 @@ int main(int argc, char** argv) {
   // 更新后检查各db，并将过大db进行拆分
   std::vector<int> ldb_no_v;
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
-  int divide_status;
   while (map_it != meta_map_by_id.end()) {
-    divide_status = divide_to_multi_db(db_map_by_id, map_it->first, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
-    if (divide_status == 0)
+    int status = divide_to_multi_db(db_map_by_id, map_it->first, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
+    if (status == 0)
       ldb_no_v.push_back(map_it->first);
+    ++map_it;
   }
   close_all_mapped_db(db_map_by_id);
-  for (int i=0; i<ldb_no_v.size(); i++)
+  for (int i = 0; i < ldb_no_v.size(); i++)
     destroy_large_db(log_file, meta_map_by_id, ldb_no_v[i], collectionDir);
 
   infile.close();
   log_file.close();
-  cout << "export done! detail: " << logStr << endl;
+  cout << "update done! detail: " << logStr << endl;
   return 0;
 }

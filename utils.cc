@@ -21,13 +21,13 @@ void logging(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, const int&
            << " " << meta_map_by_id[ldb_no].second << std::endl;
 }
 
-void destroy_large_db(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, const int& max_ldb_no, const std::string& collectionDir) {
+void destroy_large_db(std::fstream& log_file, MetaMapByIdType& meta_map_by_id, const int& ldb_no, const std::string& collectionDir) {
   leveldb::Options options;
-  std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(max_ldb_no);
+  std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
   leveldb::Status status = leveldb::DestroyDB(db_dir_str, options);
   assert(status.ok());
-  cout << "destroy db [ " << max_ldb_no << " ]" << endl;
-  logging(log_file, meta_map_by_id, max_ldb_no, "-1");
+  cout << "destroy db [ " << ldb_no << " ]" << endl;
+  logging(log_file, meta_map_by_id, ldb_no, "-1");
 }
 
 void close_all_mapped_db(DbMapByIdType& db_map_by_id) {

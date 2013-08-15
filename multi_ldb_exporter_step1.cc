@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
   logging(log_file, meta_map_by_id, max_ldb_no);
 
   int old_max_ldb_no = max_ldb_no;
-  divide_to_multi_db(db_map_by_id, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
+  divide_to_multi_db(db_map_by_id, old_max_ldb_no, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
   close_all_mapped_db(db_map_by_id);
   destroy_large_db(log_file, meta_map_by_id, old_max_ldb_no, collectionDir);
 
