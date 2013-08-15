@@ -38,12 +38,12 @@ void close_all_mapped_db(DbMapByIdType& db_map_by_id) {
   }
 }
 
-void divide_to_multi_db(DbMapByIdType& db_map_by_id, int& max_ldb_no, MetaMapByIdType& meta_map_by_id, std::fstream& log_file, const std::string& collectionDir, const leveldb::Options& ldb_options) {
-  leveldb::Iterator* it = db_map_by_id[max_ldb_no]->NewIterator(leveldb::ReadOptions());
+int divide_to_multi_db(DbMapByIdType& db_map_by_id, const int& ldb_no, int& max_ldb_no, MetaMapByIdType& meta_map_by_id, std::fstream& log_file, const std::string& collectionDir, const leveldb::Options& ldb_options) {
+  leveldb::Iterator* it = db_map_by_id[ldb_no]->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
 
-  int large_db_size = meta_map_by_id[max_ldb_no].second;
-  if (large_db_size <= maxDbSize) return;
+  int large_db_size = meta_map_by_id[ldb_no].second;
+  if (large_db_size <= maxDbSize) return -1;
 
   leveldb::Status status;
   while (it->Valid()) {
@@ -70,4 +70,5 @@ void divide_to_multi_db(DbMapByIdType& db_map_by_id, int& max_ldb_no, MetaMapByI
     // logging
     logging(log_file, meta_map_by_id, max_ldb_no);
   }
+  return 0;
 }

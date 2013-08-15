@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <vector>
 #include <utility>
 
 #include <boost/filesystem.hpp>
@@ -42,19 +43,14 @@ void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_
   }
 }
 
-void load_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, const std::string& collectionDir) {
-  NumericComparator cmp;
-  leveldb::Options options;
-  options.comparator = &cmp;
-  options.create_if_missing = true;
+void load_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, const std::string& collectionDir, const leveldb::Options ldb_options) {
   leveldb::Status status;
-
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
   while (map_it != meta_map_by_id.end()) {
     leveldb::DB* db;
     int ldb_no = map_it->first;
     std::string collection_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
-    status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
+    status = leveldb::DB::Open(ldb_options, collection_sub_dir_str, &db);
     assert(status.ok());
 
     db_map_by_id.insert(DbMapByIdVtype(ldb_no, db));
@@ -62,15 +58,7 @@ void load_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id,
   }
 }
 
-void close_multi_db(DbMapByIdType& db_map_by_id) {
-  DbMapByIdType::iterator map_it = db_map_by_id.begin();
-  while (map_it != db_map_by_id.end()) {
-    delete map_it->second;
-    ++map_it;
-  }
-}
-
-void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, MetaMapByLrgType& meta_map_by_lrange, std::fstream& log_file, std::ifstream& infile, const std::string collectionDir) {
+void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, MetaMapByLrgType& meta_map_by_lrange, std::fstream& log_file, std::ifstream& infile, const std::string collectionDir, const leveldb::Options ldb_options) {
   // 准备WriteBatch
   BatchMapByIdType batch_map_by_id;
   DbMapByIdType::iterator map_it1 = db_map_by_id.begin();
@@ -98,7 +86,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
     while (map_it2 != meta_map_by_lrange.end()) {
       if (key < map_it2->first) {
         last_ldb_no = ldb_no;
-        ldb_no = map_it2->second;
+      ldb_no = map_it2->second;
         break;
       }
       ++map_it2;
@@ -125,13 +113,9 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
 
   // 更新小于所有lrange的数据到新的leveldb中
   if (over_lrange_count > 0) {
-    NumericComparator cmp;
-    leveldb::Options options;
-    options.comparator = &cmp;
-    options.create_if_missing = true;
     leveldb::DB* db;
     std::string collection_sub_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(++max_ldb_no);
-    status = leveldb::DB::Open(options, collection_sub_dir_str, &db);
+    status = leveldb::DB::Open(ldb_options, collection_sub_dir_str, &db);
     assert(status.ok());
 
     status = db->Write(leveldb::WriteOptions(), &over_lrange_batch);
@@ -151,8 +135,6 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
     // logging
     logging(log_file, meta_map_by_id, max_ldb_no);
   }
-
-  // TODO 更新后检查各db，并将过大db进行拆分
 }
 
 int main(int argc, char** argv) {
@@ -177,8 +159,13 @@ int main(int argc, char** argv) {
   MetaMapByLrgType meta_map_by_lrange;
   int max_ldb_no = 0;
   load_meta_from_log(meta_map_by_id, meta_map_by_lrange, max_ldb_no, log_file);
+
+  NumericComparator cmp;
+  leveldb::Options options;
+  options.comparator = &cmp;
+  options.create_if_missing = true;
   DbMapByIdType db_map_by_id;
-  load_multi_db(db_map_by_id, meta_map_by_id, collectionDir);
+  load_multi_db(db_map_by_id, meta_map_by_id, collectionDir, options);
 
   std::string ifile("data/global_activity.csv");
   std::ifstream infile(ifile.c_str());
@@ -188,9 +175,21 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  update_to_multi_db(db_map_by_id, meta_map_by_id, max_ldb_no, meta_map_by_lrange, log_file, infile, collectionDir);
+  update_to_multi_db(db_map_by_id, meta_map_by_id, max_ldb_no, meta_map_by_lrange, log_file, infile, collectionDir, options);
 
-  close_multi_db(db_map_by_id);
+  // 更新后检查各db，并将过大db进行拆分
+  std::vector<int> ldb_no_v;
+  MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
+  int divide_status;
+  while (map_it != meta_map_by_id.end()) {
+    divide_status = divide_to_multi_db(db_map_by_id, map_it->first, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
+    if (divide_status == 0)
+      ldb_no_v.push_back(map_it->first);
+  }
+  close_all_mapped_db(db_map_by_id);
+  for (int i=0; i<ldb_no_v.size(); i++)
+    destroy_large_db(log_file, meta_map_by_id, ldb_no_v[i], collectionDir);
+
   infile.close();
   log_file.close();
   cout << "export done! detail: " << logStr << endl;
