@@ -13,6 +13,6 @@
 void logging(std::fstream&, MetaMapByIdType&, const int&, std::string = "");
 void destroy_large_db(std::fstream&, MetaMapByIdType&, const int&, const std::string&);
 void close_all_mapped_db(DbMapByIdType&);
-void divide_to_multi_db(DbMapByIdType&, int&, MetaMapByIdType&, std::fstream&, const std::string&);
+void divide_to_multi_db(DbMapByIdType&, int&, MetaMapByIdType&, std::fstream&, const std::string&, const leveldb::Options&);
 
 #endif

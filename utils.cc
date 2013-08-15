@@ -38,23 +38,18 @@ void close_all_mapped_db(DbMapByIdType& db_map_by_id) {
   }
 }
 
-void divide_to_multi_db(DbMapByIdType& db_map_by_id, int& max_ldb_no, MetaMapByIdType& meta_map_by_id, std::fstream& log_file, const std::string& collectionDir) {
-  NumericComparator cmp;
-  leveldb::Options options;
-  options.comparator = &cmp;
-  options.create_if_missing = true;
-  leveldb::Status status;
-
+void divide_to_multi_db(DbMapByIdType& db_map_by_id, int& max_ldb_no, MetaMapByIdType& meta_map_by_id, std::fstream& log_file, const std::string& collectionDir, const leveldb::Options& ldb_options) {
   leveldb::Iterator* it = db_map_by_id[max_ldb_no]->NewIterator(leveldb::ReadOptions());
   it->SeekToFirst();
 
   int large_db_size = meta_map_by_id[max_ldb_no].second;
   if (large_db_size <= maxDbSize) return;
 
+  leveldb::Status status;
   while (it->Valid()) {
     leveldb::DB* db;
     std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(++max_ldb_no);
-    status = leveldb::DB::Open(options, db_dir_str, &db);
+    status = leveldb::DB::Open(ldb_options, db_dir_str, &db);
     assert(status.ok());
 
     db_map_by_id.insert(DbMapByIdVtype(max_ldb_no, db));

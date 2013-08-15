@@ -18,15 +18,10 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-NumericComparator cmp;
-void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no, const std::string& collectionDir) {
-  leveldb::Options options;
-  options.comparator = &cmp;
-  options.create_if_missing = true;
-
+void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no, const std::string& collectionDir, const leveldb::Options& ldb_options) {
   leveldb::DB* db;
   std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
-  leveldb::Status status = leveldb::DB::Open(options, db_dir_str, &db);
+  leveldb::Status status = leveldb::DB::Open(ldb_options, db_dir_str, &db);
   assert(status.ok());
 
   db_map_by_id.insert(DbMapByIdVtype(ldb_no, db));
@@ -91,17 +86,22 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  NumericComparator cmp;
+  leveldb::Options options;
+  options.comparator = &cmp;
+  options.create_if_missing = true;
+
   int max_ldb_no = 1;
   DbMapByIdType db_map_by_id;
   MetaMapByIdType meta_map_by_id;
-  write_to_single_db(db_map_by_id, meta_map_by_id, infile, max_ldb_no, collectionDir);
+  write_to_single_db(db_map_by_id, meta_map_by_id, infile, max_ldb_no, collectionDir, options);
 
   infile.close();
   cout << "write to db [ " << max_ldb_no << " ]" << endl;
   logging(log_file, meta_map_by_id, max_ldb_no);
 
   int old_max_ldb_no = max_ldb_no;
-  divide_to_multi_db(db_map_by_id, max_ldb_no, meta_map_by_id, log_file, collectionDir);
+  divide_to_multi_db(db_map_by_id, max_ldb_no, meta_map_by_id, log_file, collectionDir, options);
   close_all_mapped_db(db_map_by_id);
   destroy_large_db(log_file, meta_map_by_id, old_max_ldb_no, collectionDir);
 
