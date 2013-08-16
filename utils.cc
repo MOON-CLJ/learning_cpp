@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "comparators.h"
 #include "constants.h"
+#include "typedef.h"
 
 using std::cerr;
 using std::cout;

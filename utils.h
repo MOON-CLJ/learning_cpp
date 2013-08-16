@@ -8,6 +8,7 @@
 
 #include "leveldb/db.h"
 
+#include "typedef.h"
 #include "constants.h"
 
 void logging(std::fstream&, MetaMapByIdType&, const int&, std::string = "");

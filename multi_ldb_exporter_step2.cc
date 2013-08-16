@@ -13,6 +13,7 @@
 #include "leveldb/write_batch.h"
 
 #include "constants.h"
+#include "typedef.h"
 #include "comparators.h"
 #include "utils.h"
 
@@ -77,6 +78,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
   int over_lrange_count = 0;
 
   // 更新数据到相应batch
+  NumericMapComp numeric_compare;
   MetaMapByIdType old_meta_map_by_id(meta_map_by_id);
   int delimiter_idx;
   std::string line, key, value;
@@ -88,7 +90,7 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_b
     int ldb_no = -1;
     MetaMapByLrgType::iterator map_it2 = meta_map_by_lrange.begin();
     while (map_it2 != meta_map_by_lrange.end()) {
-      if (key < map_it2->first) break;
+      if (numeric_compare(key, map_it2->first)) break;
       ldb_no = map_it2->second;
       ++map_it2;
     }

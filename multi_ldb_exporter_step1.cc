@@ -9,6 +9,7 @@
 #include "leveldb/write_batch.h"
 
 #include "constants.h"
+#include "typedef.h"
 #include "comparators.h"
 #include "utils.h"
 
