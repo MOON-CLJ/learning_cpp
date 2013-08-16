@@ -66,7 +66,7 @@ int divide_to_multi_db(DbMapByIdType& db_map_by_id, const int& ldb_no, int& max_
     meta_map_by_id[max_ldb_no].second = i;
     status = db->Write(leveldb::WriteOptions(), &batch);
     assert(status.ok());
-    cout << "write to db [ " << max_ldb_no << " ]" << endl;
+    cout << "divide db [ " << ldb_no << " ]" << " to db [ " << max_ldb_no << " ]" << endl;
 
     // logging
     logging(log_file, meta_map_by_id, max_ldb_no);
