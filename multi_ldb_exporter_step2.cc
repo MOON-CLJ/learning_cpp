@@ -23,7 +23,9 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_map_by_lrange, int& max_ldb_no, std::fstream& log_file) {
+void load_meta_from_log(MetaMapByIdType& meta_map_by_id,
+                        MetaMapByLrgType& meta_map_by_lrange,
+                        int& max_ldb_no, std::fstream& log_file) {
   int ldb_no, count;
   std::string lrange, line;
 
@@ -48,7 +50,10 @@ void load_meta_from_log(MetaMapByIdType& meta_map_by_id, MetaMapByLrgType& meta_
   }
 }
 
-void load_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, const std::string& collectionDir, const leveldb::Options ldb_options) {
+void load_multi_db(DbMapByIdType& db_map_by_id,
+                   MetaMapByIdType& meta_map_by_id,
+                   const std::string& collectionDir,
+                   const leveldb::Options ldb_options) {
   leveldb::Status status;
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
   while (map_it != meta_map_by_id.end()) {
@@ -63,7 +68,13 @@ void load_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id,
   }
 }
 
-void update_to_multi_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, int& max_ldb_no, MetaMapByLrgType& meta_map_by_lrange, std::fstream& log_file, std::ifstream& infile, const std::string collectionDir, const leveldb::Options ldb_options) {
+void update_to_multi_db(DbMapByIdType& db_map_by_id,
+                        MetaMapByIdType& meta_map_by_id,
+                        int& max_ldb_no,
+                        MetaMapByLrgType& meta_map_by_lrange,
+                        std::fstream& log_file, std::ifstream& infile,
+                        const std::string collectionDir,
+                        const leveldb::Options ldb_options) {
   // 准备WriteBatch
   BatchMapByIdType batch_map_by_id;
   DbMapByIdType::iterator map_it1 = db_map_by_id.begin();

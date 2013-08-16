@@ -19,7 +19,12 @@ using std::endl;
 
 namespace fs = boost::filesystem;
 
-void write_to_single_db(DbMapByIdType& db_map_by_id, MetaMapByIdType& meta_map_by_id, std::ifstream& infile, const int& ldb_no, const std::string& collectionDir, const leveldb::Options& ldb_options) {
+void write_to_single_db(DbMapByIdType& db_map_by_id,
+                        MetaMapByIdType& meta_map_by_id,
+                        std::ifstream& infile,
+                        const int& ldb_no,
+                        const std::string& collectionDir,
+                        const leveldb::Options& ldb_options) {
   leveldb::DB* db;
   std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
   leveldb::Status status = leveldb::DB::Open(ldb_options, db_dir_str, &db);
