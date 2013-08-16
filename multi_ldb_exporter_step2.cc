@@ -72,7 +72,8 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id,
                         MetaMapByIdType& meta_map_by_id,
                         int& max_ldb_no,
                         MetaMapByLrgType& meta_map_by_lrange,
-                        std::fstream& log_file, std::ifstream& infile,
+                        std::fstream& log_file,
+                        std::ifstream& infile,
                         const std::string collectionDir,
                         const leveldb::Options ldb_options) {
   // 准备WriteBatch
@@ -122,6 +123,8 @@ void update_to_multi_db(DbMapByIdType& db_map_by_id,
     if (meta_map_by_id[map_it1->first].second > old_meta_map_by_id[map_it1->first].second) {
       status = (map_it1->second)->Write(leveldb::WriteOptions(), &batch_map_by_id[map_it1->first]);
       assert(status.ok());
+      logging(log_file, old_meta_map_by_id, map_it1->first, "-1");
+      logging(log_file, meta_map_by_id, map_it1->first);
       cout << "update to db: " << map_it1->first << endl;
     }
     ++map_it1;
