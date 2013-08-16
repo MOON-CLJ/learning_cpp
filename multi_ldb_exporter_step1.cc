@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     cout << "create log: "
          << logStr << endl;
 
-  std::string ifile("data/global_activity.csv");
+  std::string ifile(origin_ifile_str);
   std::ifstream infile(ifile.c_str());
   if (!infile) {
     cerr << "error: unable to open file: "

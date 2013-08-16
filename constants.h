@@ -3,9 +3,13 @@
 
 #include <string>
 
-const std::string ldbBaseDir("/tmp/test_file_to_multi_instance_leveldb");
+const std::string ldbBaseDir("/tmp/test_multi_ldb_exporter");
 const std::string logName("CURRENT");
-const int maxDbSize = 500000;
+const int maxDbSize = 10000000;
 const int perDbSize = maxDbSize / 2;
+
+// tmp
+const std::string origin_ifile_str("data/fake_data1_origin.csv");
+const std::string update_ifile_str("data/fake_data1_update.csv");
 
 #endif

@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
   DbMapByIdType db_map_by_id;
   load_multi_db(db_map_by_id, meta_map_by_id, collectionDir, options);
 
-  std::string ifile("data/global_activity.csv");
+  std::string ifile(update_ifile_str);
   std::ifstream infile(ifile.c_str());
   if (!infile) {
     cerr << "error: unable to open file: "
