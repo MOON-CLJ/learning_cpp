@@ -43,6 +43,7 @@ void load_meta_from_log(MetaMapByIdType& meta_map_by_id,
         max_ldb_no = ldb_no;
     }
   }
+  log_file.clear();
   MetaMapByIdType::iterator map_it = meta_map_by_id.begin();
   while (map_it != meta_map_by_id.end()) {
     meta_map_by_lrange.insert(MetaMapByLrgVtype((map_it->second).first, map_it->first));
@@ -68,6 +69,7 @@ void load_multi_db(DbMapByIdType& db_map_by_id,
   }
 }
 
+// 将校准和更新分开
 void update_to_multi_db(DbMapByIdType& db_map_by_id,
                         MetaMapByIdType& meta_map_by_id,
                         int& max_ldb_no,
