@@ -10,6 +10,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include "leveldb/db.h"
+#include "leveldb/cache.h"
 #include "leveldb/write_batch.h"
 
 #include "constants.h"
@@ -188,6 +189,8 @@ int main(int argc, char** argv) {
 
   NumericComparator cmp;
   leveldb::Options options;
+  options.write_buffer_size = 512 * 1048576;
+  options.block_cache = leveldb::NewLRUCache(512 * 1048576);
   options.comparator = &cmp;
   options.create_if_missing = true;
   DbMapByIdType db_map_by_id;
