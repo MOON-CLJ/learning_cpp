@@ -5,7 +5,7 @@
 #include "comparators.h"
 
 int NumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
-  // TODO 没考虑负数，也没考虑小数
+  // Notice: 没考虑负数，也没考虑小数
   size_t a_len, b_len;
   a_len = a.size();
   b_len = b.size();
@@ -28,7 +28,7 @@ void MultiNumericComparator::FindShortestSeparator(std::string*, const leveldb::
 void MultiNumericComparator::FindShortSuccessor(std::string*) const { }
 
 bool NumericMapComp::operator() (const std::string& k1, const std::string& k2) const {
-  // TODO 没考虑负数，也没考虑小数
+  // Notice: 没考虑负数，也没考虑小数
   std::string::size_type k1_len, k2_len;
   k1_len = k1.size();
   k2_len = k2.size();
