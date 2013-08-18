@@ -23,6 +23,17 @@ def fake_data2():
                 f.write("%s\t%s\n" % (i, i))
 
 
+def fake_data3():
+    with open("../data/fake_data3_origin.csv", "w") as f:
+        for i in xrange(50000, 500000):
+            f.write("%s\t%s\n" % (i, i))
+
+    with open("../data/fake_data3_update.csv", "w") as f:
+        for i in xrange(0, 550000):
+            f.write("%s\t%s\n" % (i, i))
+
+
 if __name__ == '__main__':
     # fake_data1()
-    fake_data2()
+    # fake_data2()
+    fake_data3()
