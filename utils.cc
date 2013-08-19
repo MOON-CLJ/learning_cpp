@@ -84,5 +84,9 @@ int divide_to_multi_db(DbMapByIdType& db_map_by_id,
     // logging
     logging(log_file, meta_map_by_id, max_ldb_no);
   }
+
+  assert(it->status().ok());
+  delete it;
+
   return 0;
 }

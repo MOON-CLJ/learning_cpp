@@ -19,7 +19,43 @@ void NumericComparator::FindShortestSeparator(std::string*, const leveldb::Slice
 void NumericComparator::FindShortSuccessor(std::string*) const { }
 
 int MultiNumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
-  // TODO
+  int a_size, b_size;
+  a_size = a.size();
+  b_size = b.size();
+  const char* a_data = a.data();
+  const char* b_data = b.data();
+  while (a_size) {
+    std::string a_tmp_s, b_tmp_s;
+    while (a_size && *a_data != '_') {
+      a_tmp_s += *a_data;
+      ++a_data;
+      --a_size;
+    }
+    while (b_size && *b_data != '_') {
+      b_tmp_s += *b_data;
+      ++b_data;
+      --b_size;
+    }
+
+    // deal with "^ $"
+    if (a_tmp_s == "^" || b_tmp_s == "$") return -1;
+    if (a_tmp_s == "$" || b_tmp_s == "^") return 1;
+
+    int a_tmp_i, b_tmp_i;
+    a_tmp_i = boost::lexical_cast<int>(a_tmp_s);
+    b_tmp_i = boost::lexical_cast<int>(b_tmp_s);
+
+    if (a_tmp_i < b_tmp_i) return -1;
+    if (a_tmp_i > b_tmp_i) return 1;
+
+    if (a_size) {
+      ++a_data;
+      --a_size;
+      ++b_data;
+      --b_size;
+    }
+  }
+
   return 0;
 }
 

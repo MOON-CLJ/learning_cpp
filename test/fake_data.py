@@ -33,7 +33,14 @@ def fake_data3():
             f.write("%s\t%s\n" % (i, i))
 
 
+def fake_data4():
+    with open("../data/fake_data4_origin.csv", "w") as f:
+        for i in xrange(100):
+            f.write("%s_%s\t%s\n" % (i % 10, i, i))
+
+
 if __name__ == '__main__':
     # fake_data1()
     # fake_data2()
-    fake_data3()
+    # fake_data3()
+    fake_data4()
