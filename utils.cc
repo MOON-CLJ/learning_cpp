@@ -28,6 +28,9 @@ void destroy_large_db(std::fstream& log_file,
                       MetaMapByIdType& meta_map_by_id,
                       const int& ldb_no,
                       const std::string& collectionDir) {
+  int large_db_size = meta_map_by_id[ldb_no].second;
+  if (large_db_size <= maxDbSize) return;
+
   leveldb::Options options;
   std::string db_dir_str = collectionDir + "/" + boost::lexical_cast<std::string>(ldb_no);
   leveldb::Status status = leveldb::DestroyDB(db_dir_str, options);
