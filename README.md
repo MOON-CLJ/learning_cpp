@@ -5,36 +5,12 @@
 ## 1，需求
 ---------
 user_profile项目
-<table>
-    <tr>
-        <td>uid</td>
-        <td>l1</td>
-        <td>l2</td>
-        <td>l3</td>
-        <td>l4</td>
-    </tr>
-    <tr>
-        <td>1001</td>
-        <td>1</td>
-        <td>1</td>
-        <td></td>
-        <td>1</td>
-    </tr>
-    <tr>
-        <td>1002</td>
-        <td>2</td>
-        <td>1</td>
-        <td>1</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>1003</td>
-        <td>3</td>
-        <td>3</td>
-        <td>2</td>
-        <td>1</td>
-    </tr>
-</table>
+
+	| uid  |  l1 |  l2 | l3 |  l4 |
+	| 1001 |  1  |  1  |    |  1  |
+	| 1002 |  2  |  1  | 1  |     |
+	| 1003 |  3  |  3  | 2  |  1  |
+
 a，项目的输入数据就类似上表这样的很多个不同的稀疏表结构
 
 b，每张表都非常大
@@ -64,62 +40,26 @@ leveldb是Google开源的单机KV存储引擎。key是排序的，排序规则�
 1中的表实际上可以这样存储
 
 原始数据：
-<table>
-    <tr>
-        <td>key</td>
-        <td>value</td>
-    </tr>
-    <tr>
-        <td>1001</td>
-        <td>1\t1\t\t1</td>
-    </tr>
-    <tr>
-        <td>1002</td>
-        <td>2\t1\t1\t</td>
-    </tr>
-    <tr>
-        <td>1003</td>
-        <td>3\t3\t2\t1</td>
-    </tr>
-</table>
+
+	| key  	|  value     |
+	| 1001  |  1\t1\t\t1 |
+	| 1002  |  2\t1\t1\t |
+	| 1003  |  3\t3\t2\t1 |
+
 l2索引：
-<table>
-    <tr>
-        <td>key</td>
-        <td>value</td>
-    </tr>
-    <tr>
-        <td>1_1001</td>
-        <td>1001</td>
-    </tr>
-    <tr>
-        <td>1_1002</td>
-        <td>1002</td>
-    </tr>
-    <tr>
-        <td>3_1003</td>
-        <td>1003</td>
-    </tr>
-</table>
+
+	| key  	  | value |
+	| 1_1001  |  1001 |
+	| 1_1002  |  1002 |
+	| 3_1003  |  1003 |
+	
 l3索引：
-<table>
-    <tr>
-        <td>key</td>
-        <td>value</td>
-    </tr>
-    <tr>
-        <td>^_1001</td>
-        <td>1001</td>
-    </tr>
-    <tr>
-        <td>1_1002</td>
-        <td>1002</td>
-    </tr>
-    <tr>
-        <td>2_1003</td>
-        <td>1003</td>
-    </tr>
-</table>
+
+	| key  	  | value |
+	| ^_1001  |  1001 |
+	| 1_1002  |  1002 |
+	| 2_1003  |  1003 |
+	
 leveldb的性能非常好，但是同时只允许一个进程访问读写。
 
 绕过这个问题的方式是，将数据存储在多个leveldb实例中，并对存储元信息进行管理。
