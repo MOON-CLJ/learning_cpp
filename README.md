@@ -6,10 +6,11 @@
 ---------
 user_profile项目
 
-	| uid  |  l1 |  l2 | l3 |  l4 |
-	| 1001 |  1  |  1  |    |  1  |
-	| 1002 |  2  |  1  | 1  |     |
-	| 1003 |  3  |  3  | 2  |  1  |
+| uid  |  l1 |  l2 | l3 |  l4 |	
+|------|-----|-----|----|-----|
+| 1001 |  1  |  1  |    |  1  |
+| 1002 |  2  |  1  | 1  |     |
+| 1003 |  3  |  3  | 2  |  1  |
 
 a，项目的输入数据就类似上表这样的很多个不同的稀疏表结构
 
@@ -41,24 +42,27 @@ leveldb是Google开源的单机KV存储引擎。key是排序的，排序规则�
 
 原始数据：
 
-	| key  	|  value     |
-	| 1001  |  1\t1\t\t1 |
-	| 1002  |  2\t1\t1\t |
-	| 1003  |  3\t3\t2\t1 |
+| key  	|  value     |
+|-------|------------|
+| 1001  |  1\t1\t\t1 |
+| 1002  |  2\t1\t1\t |
+| 1003  |  3\t3\t2\t1 |
 
 l2索引：
 
-	| key  	  | value |
-	| 1_1001  |  1001 |
-	| 1_1002  |  1002 |
-	| 3_1003  |  1003 |
+| key  	  | value |
+|---------|-------|
+| 1_1001  |  1001 |
+| 1_1002  |  1002 |
+| 3_1003  |  1003 |
 	
 l3索引：
 
-	| key  	  | value |
-	| ^_1001  |  1001 |
-	| 1_1002  |  1002 |
-	| 2_1003  |  1003 |
+| key  	  | value |
+|---------|-------|
+| ^_1001  |  1001 |
+| 1_1002  |  1002 |
+| 2_1003  |  1003 |
 	
 leveldb的性能非常好，但是同时只允许一个进程访问读写。
 
@@ -153,13 +157,13 @@ sys     0m0.132s
 
 ## index查询
 -----------
-```
+````
 leveldb::Slice s_beg("8_^!");
   leveldb::Slice s_end("9_^!");
   for (it->Seek(s_beg); it->Valid() && cmp.Compare(it->key(), s_end) < 0; it->Next()) {
     cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
   }
-```
+````
 ```
 results:
 
@@ -205,7 +209,7 @@ b，
 
 ### 对于uid的比较函数
 
-```
+````
 int NumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
   // Notice: 没考虑负数，也没考虑小数
   size_t a_len, b_len;
@@ -215,11 +219,11 @@ int NumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b)
   if (a_len > b_len) return 1;
   return a.compare(b);
 }
-```
+````
 
 ### 对于index的比较函数
 
-```
+````
 int MultiNumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
   const char* a_data = a.data();
   const char* b_data = b.data();
@@ -244,11 +248,11 @@ int MultiNumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slic
 
   return 0;
 }
-```
+````
 
 比较函数在leveldb中用来比较判断key的大小，被非常频繁的调用，其性能非常重要。
 
-```
+````
 class Slice {
 public:
   // Create a slice that refers to d[0,n-1].
@@ -267,7 +271,7 @@ inline int Slice::compare(const Slice& b) const {
   ... 
   return r;
 }
-```
+````
 即其比较操作是在内存中进行的，才能保证效率。
 
 NumericComparator的实现很自然。
