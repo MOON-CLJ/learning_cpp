@@ -90,7 +90,7 @@ c，再将更新数据集写入到拆分后形成的多个实例中。
 
 d，将拆分后超过固定数量的实例继续拆分为多个实例。
 
-## 写入和更新性能
+## 4，写入和更新性能
 ---------------
 localhost ssd
 
@@ -161,14 +161,14 @@ user    0m8.380s
 
 sys     0m0.132s
 
-## index查询
+## 5，index查询
 -----------
 ````
 leveldb::Slice s_beg("8_^!");
-  leveldb::Slice s_end("9_^!");
-  for (it->Seek(s_beg); it->Valid() && cmp.Compare(it->key(), s_end) < 0; it->Next()) {
-    cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
-  }
+leveldb::Slice s_end("9_^!");
+for (it->Seek(s_beg); it->Valid() && cmp.Compare(it->key(), s_end) < 0; it->Next()) {
+  cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
+}
 ````
 ```
 results:
@@ -195,7 +195,7 @@ results:
 
 ...
 ```
-## demo实现的缺陷
+## 6，demo实现的缺陷
 ---------------
 a,
 
@@ -209,7 +209,7 @@ b，
 
 本demo主要是考察设想的可行性和性能问题，只做过少量场景数据的测试。
 
-## 一点点c++性能优化和坑
+## 7，一点点c++性能优化和坑
 ---------------------
 自定义比较函数
 
@@ -287,10 +287,10 @@ NumericComparator的实现很自然。
 ### 坑
 “hehe” + '!'
 
-## 开发注意事项
+## 8，开发注意事项
 -------------
 g++ multi_ldb_exporter_step1.cc constants.h utils.h utils.cc comparators.h comparators.cc /usr/local/lib/libleveldb.a /usr/local/lib/libsnappy.a -lpthread -lboost_system-mt -lboost_filesystem-mt
 
-## 结束语：我是怎么走上c++的道路的
+## 9，结束语：我是怎么走上c++的道路的
 -----------------------------
 我爱上了c++，义无反顾。
