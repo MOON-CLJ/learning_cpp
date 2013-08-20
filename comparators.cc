@@ -3,6 +3,7 @@
 #include "leveldb/db.h"
 
 #include "comparators.h"
+#include "constants.h"
 
 int NumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
   // Notice: 没考虑负数，也没考虑小数
@@ -19,41 +20,25 @@ void NumericComparator::FindShortestSeparator(std::string*, const leveldb::Slice
 void NumericComparator::FindShortSuccessor(std::string*) const { }
 
 int MultiNumericComparator::Compare(const leveldb::Slice& a, const leveldb::Slice& b) const {
-  int a_size, b_size;
-  a_size = a.size();
-  b_size = b.size();
   const char* a_data = a.data();
   const char* b_data = b.data();
-  while (a_size) {
-    std::string a_tmp_s, b_tmp_s;
-    while (a_size && *a_data != '_') {
-      a_tmp_s += *a_data;
-      ++a_data;
-      --a_size;
-    }
-    while (b_size && *b_data != '_') {
-      b_tmp_s += *b_data;
-      ++b_data;
-      --b_size;
-    }
+  char* a_data_next;
+  char* b_data_next;
 
-    // deal with "^ $"
-    if (a_tmp_s == "^" || b_tmp_s == "$") return -1;
-    if (a_tmp_s == "$" || b_tmp_s == "^") return 1;
+  while (1) {
+    if (*a_data == idxLower || *b_data == idxUpper) return -1;
+    if (*a_data == idxUpper || *b_data == idxLower) return 1;
 
-    int a_tmp_i, b_tmp_i;
-    a_tmp_i = boost::lexical_cast<int>(a_tmp_s);
-    b_tmp_i = boost::lexical_cast<int>(b_tmp_s);
+    double d1, d2;
+    d1 = strtod(a_data, &a_data_next);
+    d2 = strtod(b_data, &b_data_next);
 
-    if (a_tmp_i < b_tmp_i) return -1;
-    if (a_tmp_i > b_tmp_i) return 1;
+    if (d1 < d2) return -1;
+    if (d1 > d2) return 1;
 
-    if (a_size) {
-      ++a_data;
-      --a_size;
-      ++b_data;
-      --b_size;
-    }
+    if (*a_data_next == idxTerminated) break;
+    a_data = ++a_data_next;
+    b_data = ++b_data_next;
   }
 
   return 0;

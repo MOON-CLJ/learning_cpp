@@ -4,6 +4,7 @@
 #include "leveldb/cache.h"
 
 #include "comparators.h"
+#include "constants.h"
 
 using std::cerr;
 using std::cout;
@@ -22,8 +23,9 @@ int main(int argc, char** argv) {
   assert(status.ok());
 
   leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
-  leveldb::Slice start_s("8_^");
-  for (it->Seek(start_s); it->Valid(); it->Next()) {
+  leveldb::Slice s_beg("8_^!");
+  leveldb::Slice s_end("9_^!");
+  for (it->Seek(s_beg); it->Valid() && cmp.Compare(it->key(), s_end) < 0; it->Next()) {
     cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
   }
   assert(it->status().ok());
