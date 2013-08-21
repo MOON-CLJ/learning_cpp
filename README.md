@@ -28,23 +28,41 @@ c，要求对表按照uid做交、并、diff（在a中不在b中）
 
 ## 3，初步设想
 ------------
-我先是查资料查了一周（培训剩的时间不多）
+### 启发
 
-最后看到一篇http://rdc.taobao.com/blog/cs/?p=1394是介绍Tair是怎样使用leveldb的。
+我先是查资料查了一周
 
-Tair是淘宝开源的分布式KV缓存系统
+看到一篇介绍hypertable的，http://rdc.taobao.com/blog/cs/?p=60。
 
-leveldb是Google开源的单机KV存储引擎。key是排序的，排序规则可自定义。
+“在hypertable中，一张表被按照主键划分成N个range。range是负责均衡的单位，一个 range只能被一个RangeServer所管理。range在增长到一定大小之后要分裂。比如id现在的范围是1–100 那么从50开始，1-50的是一个range，51-无穷的是第二个range。”
 
-由此萌生了一个初步的设想
+然后看到一篇http://rdc.taobao.com/blog/cs/?p=1394是介绍Tair(Tair是淘宝开源的分布式KV缓存系统)是怎样使用leveldb的。
 
-1中的表实际上可以这样存储
+### leveldb
+
+The leveldb **library** provides a **persistent** key value store. Keys and values are **arbitrary byte arrays**. The keys are **ordered** within the key value store according to a **user-specified comparator** function.
+
+特性
+
+a，key是排序存储的，并且可以自定义比较函数。
+
+b，是library，跟berkeley db类似的，嵌入式的，一个文件夹就是一个db实例。两个db实例之间完全独立。
+
+c，读写性能非常好，即使到达亿级的规模。
+
+缺点
+
+c，同时只能有一个进程读写。(读也是，文档里一直在强调，具体暂未看过源码实现)
+
+### 由此萌生了一个初步的设想
 
 | uid  |  l1 |  l2 | l3 |  l4 |
 |------|-----|-----|----|-----|
 | 1001 |  1  |  1  |    |  1  |
 | 1002 |  2  |  1  | 1  |     |
 | 1003 |  3  |  3  | 2  |  1  |
+
+1中的表实际上可以这样存储
 
 原始数据：
 
@@ -74,9 +92,13 @@ leveldb的性能非常好，但是同时只允许一个进程访问读写。
 
 绕过这个问题的方式是，将数据存储在多个leveldb实例中，并对存储元信息进行管理。
 
+每个实例刚好是上面提到的hypertable中的一个range。
+
 对leveldb多个实例单独进行读写是可以并行的。
 
-所以我的demo目前实现的
+并且对原始数据和索引的处理基本上完全相同。
+
+### demo目前的实现
 
 multi_ldb_exporter_step1.cc
 
@@ -94,7 +116,7 @@ d，将拆分后超过固定数量的实例继续拆分为多个实例。
 -----------------
 localhost ssd
 
-### 真实数据集global_activity 88.4M 100W条(28.5W / 13.1W)(43W)
+### 真实数据集global_activity 88.4M 100W条(28.5W / 13.1W) (43W)
 
 每100000条拆为一个leveldb实例
 
@@ -126,7 +148,7 @@ user    0m1.689s
 
 sys     0m0.330s
 
-### 伪造数据集 1.7G 1亿条(24W / 14.8W)(50W)
+### 伪造数据集 1.7G 1亿条(24W / 14.8W) (50W)
 
 每1000W条拆为一个leveldb实例
 
@@ -218,9 +240,21 @@ leveldb并不提供db.size()这样的接口，有一个issue提到过，作者�
 
 所以在update里为了正确维护每个db的size这个信息，目前采取对于每个更新的key都查询一次，这也就是step2比step1慢的原因，不考虑这个因素的话，两者能达到同样的速度。
 
-leveldb提供一个近似的磁盘占用大小的接口db->GetApproximateSizes,可以考虑用这个接口，用实际磁盘占用替代count来作为实例拆分的依据。本demo暂未实现。
+leveldb提供一个近似的磁盘占用大小的接口db->GetApproximateSizes,可以考虑用这个接口，即用实际磁盘占用替代count来作为实例拆分的依据。本demo暂未实现。
 
 b，
+
+由于自定义比较函数这个接口的问题，写入和**读取**最自然的方式都得采用c++实现。
+
+所以dpark？
+
+python binding中plyvel提供这个接口
+
+（但是plyvel依赖debian的leveldb的包，而且即使提供了这个接口，性能也会有损失）
+
+而使用广泛的py-leveldb则不提供。
+
+c，
 
 本demo主要是考察设想的可行性和性能问题，只做过少量场景数据的测试。
 
