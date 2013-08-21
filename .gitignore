@@ -16,5 +16,7 @@ a.out
 *.sw[po]
 data
 *.gch
+multi_ldb_exporter_step1
+multi_ldb_exporter_step2
 
 .ropeproject
