@@ -42,6 +42,8 @@ c，要求对表按照uid做交、并、diff（在a中不在b中）
 
 The leveldb **library** provides a **persistent** key value store. Keys and values are **arbitrary byte arrays**. The keys are **ordered** within the key value store according to a **user-specified comparator** function.
 
+Authors: Sanjay Ghemawat (sanjay@google.com) and Jeff Dean (jeff@google.com)
+
 特性
 
 a，key是排序存储的，并且可以自定义比较函数。
@@ -52,7 +54,7 @@ c，读写性能非常好，即使到达亿级的规模。
 
 缺点
 
-c，同时只能有一个进程(可多线程)读写。(读也是，文档里一直在强调，具体暂未看过源码实现)
+c，同时只能有一个进程(可多线程)读写。(读也是，文档里一直在强调，具体暂未看过源码实现，直接表现就是打开db就加文件锁)
 
 ### 由此萌生了一个初步的设想
 
