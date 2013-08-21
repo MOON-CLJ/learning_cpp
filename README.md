@@ -36,7 +36,7 @@ c，要求对表按照uid做交、并、diff（在a中不在b中）
 
 “在hypertable中，一张表被按照主键划分成N个range。range是负责均衡的单位，一个 range只能被一个RangeServer所管理。range在增长到一定大小之后要分裂。比如id现在的范围是1–100 那么从50开始，1-50的是一个range，51-无穷的是第二个range。”
 
-然后看到一篇http://rdc.taobao.com/blog/cs/?p=1394是介绍Tair(Tair是淘宝开源的分布式KV缓存系统)是怎样使用leveldb的。
+然后看到一篇http://rdc.taobao.com/blog/cs/?p=1394 是介绍Tair(Tair是淘宝开源的分布式KV缓存系统)是怎样使用leveldb的。
 
 ### leveldb
 
