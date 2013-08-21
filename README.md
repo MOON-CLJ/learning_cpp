@@ -50,7 +50,9 @@ a，key是排序存储的，并且可以自定义比较函数。
 
 b，是library，跟berkeley db类似的，嵌入式的，一个文件夹就是一个db实例。两个db实例之间完全独立。
 
-c，读写性能非常好，即使到达亿级的规模。
+c，读写性能非常好。
+
+tested up to one billion 100-byte entries,i.e., ~100GB)。
 
 缺点
 
