@@ -91,10 +91,10 @@ c，再将更新数据集写入到拆分后形成的多个实例中。
 d，将拆分后超过固定数量的实例继续拆分为多个实例。
 
 ## 4，写入和更新性能
----------------
+-----------------
 localhost ssd
 
-### 真实数据集global_activity 88.4M 100W条(28.5W / 13.1W)
+### 真实数据集global_activity 88.4M 100W条(28.5W / 13.1W)(43W)
 
 每100000条拆为一个leveldb实例
 
@@ -118,7 +118,15 @@ user    0m6.598s
 
 sys     0m0.537s
 
-### 伪造数据集 1.7G 1亿条(24W / 14.8W)
+multi_ldb_exporter_step1.cc（不拆分）
+
+real    0m2.328s
+
+user    0m1.689s
+
+sys     0m0.330s
+
+### 伪造数据集 1.7G 1亿条(24W / 14.8W)(50W)
 
 每1000W条拆为一个leveldb实例
 
@@ -142,6 +150,13 @@ user    10m38.311s
 
 sys     0m17.474s
 
+multi_ldb_exporter_step1.cc（不拆分）
+
+real    3m19.528s
+
+user    2m58.093s
+
+sys     0m10.404s
 
 ### 伪造index数据集 100W(自定义的比较函数不同)(11.7W)
 
