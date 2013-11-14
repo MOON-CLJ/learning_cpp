@@ -5,26 +5,14 @@ def can_place_if(maps, x, y, count):
     if maps[x][y] == 'X':
         return False
 
-    # x--
-    for x1 in xrange(x - 1, -1, -1):
+    # x
+    for x1 in range(x - 1, -1, -1) + range(x + 1, count):
         if maps[x1][y] == 'M':
             return False
         if maps[x1][y] == 'X':
             break
-    # x++
-    for x1 in xrange(x + 1, count):
-        if maps[x1][y] == 'M':
-            return False
-        if maps[x1][y] == 'X':
-            break
-    # y--
-    for y1 in xrange(y - 1, -1, -1):
-        if maps[x][y1] == 'M':
-            return False
-        if maps[x][y1] == 'X':
-            break
-    # y++
-    for y1 in xrange(y + 1, count):
+    # y
+    for y1 in range(y - 1, -1, -1) + range(y + 1, count):
         if maps[x][y1] == 'M':
             return False
         if maps[x][y1] == 'X':
