@@ -16,11 +16,13 @@ def check(no, next_):
     if next_ == no:
         if elements == [] or next_ < elements[-1]:
             elements.append(next_)
-            print elements
+            return elements
             elements.pop(-1)
         # 素数
         if no > 4 and no not in sushu:
-            check(no, min(no / 2, 100))
+            rs = check(no, min(no / 2, 100))
+            if rs:
+                return rs
     elif no > math.factorial(next_):
         return
     elif no % next_ == 0:
@@ -29,20 +31,21 @@ def check(no, next_):
             tmp_next = tmp_no if elements == [] else min(elements[-1] - 1, tmp_no, 100)
             if tmp_next > 1:
                 elements.append(next_)
-                check(tmp_no, tmp_next)
+                rs = check(tmp_no, tmp_next)
+                if rs:
+                    return rs
                 elements.pop(-1)
         # 若当前next_为素数，且已经导致no / next_为素数，则next_不往下减一
         if next_ in sushu and (no / next_) in sushu:
             return
         elif next_ > 2:
-            check(no, next_ - 1)
+            rs = check(no, next_ - 1)
+            return rs
     elif next_ > 2 and no not in sushu:
-        check(no, min(next_ - 1, no / 2, 100))
+        rs = check(no, min(next_ - 1, no / 2, 100))
+        return rs
 
-elements = []
-check(610, min(610, 100))
 
-"""
 def process(line):
     high_score, low_score = (int(i) for i in line.split())
     if high_score < low_score:
@@ -61,4 +64,3 @@ while 1:
     line = sys.stdin.readline()
     elements = []
     process(line)
-"""
