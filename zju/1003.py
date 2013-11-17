@@ -1,66 +1,42 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import math
 
 
-sushu = set([2, 3, 5, 7, 11,
-             13, 17, 19, 23, 29,
-             31, 37, 41, 43, 47,
-             53, 59, 61, 67, 71,
-             73, 79, 83, 89, 97])
+def check(low_score, high_score, now):
+    global g_high_score
+    global flag_low
 
+    if (low_score == 1 and high_score == 1) or \
+            (low_score < now and high_score < now and low_score != high_score):
+        print g_high_score
+        flag_low = True
+        return True
+    if now == 1:
+        if low_score == 1:
+            flag_low = True
+        return False
+    if low_score % now == 0:
+        if check(low_score / now, high_score, now - 1):
+            return True
+    if high_score % now == 0:
+        if check(low_score, high_score / now, now - 1):
+            return True
+    if check(low_score, high_score, now - 1):
+        return True
 
-def check(no, next_):
-    global elements
-    if next_ == no:
-        if elements == [] or next_ < elements[-1]:
-            elements.append(next_)
-            return elements
-            elements.pop(-1)
-        # 素数
-        if no > 4 and no not in sushu:
-            rs = check(no, min(no / 2, 100))
-            if rs:
-                return rs
-    elif no > math.factorial(next_):
-        return
-    elif no % next_ == 0:
-        if elements == [] or next_ < elements[-1]:
-            tmp_no = no / next_
-            tmp_next = tmp_no if elements == [] else min(elements[-1] - 1, tmp_no, 100)
-            if tmp_next > 1:
-                elements.append(next_)
-                rs = check(tmp_no, tmp_next)
-                if rs:
-                    return rs
-                elements.pop(-1)
-        # 若当前next_为素数，且已经导致no / next_为素数，则next_不往下减一
-        if next_ in sushu and (no / next_) in sushu:
-            return
-        elif next_ > 2:
-            rs = check(no, next_ - 1)
-            return rs
-    elif next_ > 2 and no not in sushu:
-        rs = check(no, min(next_ - 1, no / 2, 100))
-        return rs
-
-
-def process(line):
-    high_score, low_score = (int(i) for i in line.split())
-    if high_score < low_score:
-        high_score, low_score = low_score, high_score
-    if not check(low_score, min(low_score, 100)):
-        print high_score
-    else:
-        global elements
-        elements = []
-        if not check(low_score * high_score, min(low_score * high_score, 100)):
-            print low_score
-        else:
-            print high_score
 
 while 1:
     line = sys.stdin.readline()
+    if line.strip() == '':
+        break
     elements = []
-    process(line)
+    g_high_score, g_low_score = (int(i) for i in line.split())
+    if g_high_score < g_low_score:
+        g_high_score, g_low_score = g_low_score, g_high_score
+    flag_low = False
+    if not check(g_low_score, g_high_score, min(100, max(g_low_score, g_high_score))):
+        if flag_low:
+            print g_low_score
+        else:
+            print g_high_score
