@@ -4,16 +4,14 @@ import sys
 
 
 def check(low_score, high_score, now):
-    global g_high_score
-    global flag_low
-
     if (low_score == 1 and high_score == 1) or \
             (low_score < now and high_score < now and low_score != high_score):
+        global g_high_score
         print g_high_score
-        flag_low = True
         return True
     if now == 1:
         if low_score == 1:
+            global flag_low
             flag_low = True
         return False
     if low_score % now == 0:
