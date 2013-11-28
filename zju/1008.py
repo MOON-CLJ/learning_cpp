@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 
 def can_move(height, width, num, beyond_num, action, next_square):
     global now_queue
@@ -28,10 +30,8 @@ def move(height, width, num, beyond_num, action):
     beyond_num 包含此次执行落单不足以成一行的数量
     action 此次执行的方向0, 1, 2, 3
     """
-    global mm_len, used, now_queue
-    print now_queue
-    if num == mm_len:
-        print now_queue
+    global used, now_queue
+    if num == len(mm):
         return True
 
     # 下个规模
@@ -50,18 +50,28 @@ def move(height, width, num, beyond_num, action):
         if i not in used and can_move(height, width, num, beyond_num, action, mm[i]):
             used.add(i)
             now_queue.append(i)
-            move(next_height, next_width, num + 1, next_beyond_num, next_action)
+            if move(next_height, next_width, num + 1, next_beyond_num, next_action):
+                return True
             used.discard(i)
             now_queue.pop(-1)
 
 
-mm = [
-    [5, 9, 1, 4],
-    [4, 4, 5, 6],
-    [6, 8, 5, 4],
-    [0, 4, 4, 3]]
-mm_len = len(mm)
+iter_count = 0
+while 1:
+    iter_count += 1
+    line = sys.stdin.readline()
+    count = int(line.strip())
+    if count == 0:
+        break
+    mm = []
+    for i in xrange(count ** 2):
+        line = sys.stdin.readline()
+        line = line.strip()
+        mm.append([int(i) for i in line.split()])
 
-used = set()
-now_queue = []
-move(0, 0, 0, 0, 0)
+    used = set()
+    now_queue = []
+    if_success = move(0, 0, 0, 0, 0)
+    if iter_count > 1:
+        print
+    print 'Game %s: %s' % (iter_count, "Possible" if if_success else "Impossible")
