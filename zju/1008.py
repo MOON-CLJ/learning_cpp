@@ -17,7 +17,7 @@ def can_move(height, width, num, beyond_num, action, next_square):
         else:
             c_square_index -= ((height - 1) * 2 + width * 2 - 3)
         if c_square_index >= 0 and c_square_index < num and \
-                next_square[(action + 1) % 4] != now_queue[c_square_index][(action - 1) % 4]:
+                next_square[(action + 1) % 4] != mm[now_queue[c_square_index]][(action - 1) % 4]:
             return False
 
     return True
@@ -30,7 +30,7 @@ def move(height, width, num, beyond_num, action):
     beyond_num 包含此次执行落单不足以成一行的数量
     action 此次执行的方向0, 1, 2, 3
     """
-    global used, now_queue
+    global unused, now_queue
     if num == len(mm):
         return True
 
@@ -46,13 +46,13 @@ def move(height, width, num, beyond_num, action):
         next_beyond_num = beyond_num + 1
     next_action = action + 1 if beyond_num == 1 else action
     next_action %= 4
-    for i in xrange(len(mm)):
-        if i not in used and can_move(height, width, num, beyond_num, action, mm[i]):
-            used.add(i)
+    for i in unused:
+        if can_move(height, width, num, beyond_num, action, mm[i]):
+            unused.discard(i)
             now_queue.append(i)
             if move(next_height, next_width, num + 1, next_beyond_num, next_action):
                 return True
-            used.discard(i)
+            unused.add(i)
             now_queue.pop(-1)
 
 
@@ -69,7 +69,7 @@ while 1:
         line = line.strip()
         mm.append([int(i) for i in line.split()])
 
-    used = set()
+    unused = set([i for i in xrange(len(mm))])
     now_queue = []
     if_success = move(0, 0, 0, 0, 0)
     if iter_count > 1:
