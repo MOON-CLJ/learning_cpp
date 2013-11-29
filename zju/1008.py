@@ -49,17 +49,24 @@ def move(height, width, num, beyond_num, action):
     iter_set = set([k for k, v in used.iteritems() if v > 0])
     if now_queue != []:
         iter_set -= cannot[action][now_queue[-1]]
+    move_any_next = False
     for i in iter_set:
         if_can_move = can_move(height, width, num, beyond_num, action, mm[i])
         if if_can_move == 1:
+            move_any_next = True
             used[i] -= 1
             now_queue.append(i)
-            if move(next_height, next_width, num + 1, next_beyond_num, next_action):
-                return True
+            move_rs = move(next_height, next_width, num + 1, next_beyond_num, next_action)
+            if move_rs in [True, False]:
+                return move_rs
             used[i] += 1
             now_queue.pop(-1)
         elif if_can_move == -1 and now_queue != []:
             cannot[action][now_queue[-1]].add(i)
+    if not move_any_next:
+        now_square = mm[now_queue[-1]]
+        if now_square[0] == now_square[1] == now_square[2] == now_square[3]:
+            return False
 
 iter_count = 0
 while 1:
