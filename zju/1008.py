@@ -70,10 +70,18 @@ while 1:
         break
     mm = []
     used = {}
+    pre_check_set = set()
+    pre_check_len = 0
     for i in xrange(count ** 2):
         line = sys.stdin.readline()
         line = line.strip()
         line = [int(num) for num in line.split()]
+        for num in line:
+            if num in pre_check_set:
+                pre_check_set.discard(num)
+                pre_check_len += 1
+            else:
+                pre_check_set.add(num)
         flag = True
         for j in xrange(len(mm)):
             if line == mm[j]:
@@ -84,10 +92,13 @@ while 1:
             used[len(mm)] = 1
             mm.append(line)
 
-    # 二维数组 action, last
-    cannot = [[set() for j in xrange(len(mm))] for i in xrange(4)]
-    now_queue = []
-    if_success = move(0, 0, 0, 0, 0)
+    if pre_check_len < count * (count - 1) * 2:
+        if_success = False
+    else:
+        # 二维数组 action, last
+        cannot = [[set() for j in xrange(len(mm))] for i in xrange(4)]
+        now_queue = []
+        if_success = move(0, 0, 0, 0, 0)
     if iter_count > 1:
         print
     print 'Game %s: %s' % (iter_count, "Possible" if if_success else "Impossible")
