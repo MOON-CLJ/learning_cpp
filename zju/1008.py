@@ -30,8 +30,8 @@ def move(height, width, num, beyond_num, action):
     beyond_num 包含此次执行落单不足以成一行的数量
     action 此次执行的方向0, 1, 2, 3
     """
-    global unused, now_queue, cannot
-    if num == len(mm):
+    global used, now_queue, cannot, count
+    if num == count ** 2:
         return True
 
     # 下个规模
@@ -46,17 +46,17 @@ def move(height, width, num, beyond_num, action):
         next_beyond_num = beyond_num + 1
     next_action = action + 1 if beyond_num == 1 else action
     next_action %= 4
-    iter_set = set(unused)
+    iter_set = set([k for k, v in used.iteritems() if v > 0])
     if now_queue != []:
         iter_set -= cannot[action][now_queue[-1]]
     for i in iter_set:
         if_can_move = can_move(height, width, num, beyond_num, action, mm[i])
         if if_can_move == 1:
-            unused.discard(i)
+            used[i] -= 1
             now_queue.append(i)
             if move(next_height, next_width, num + 1, next_beyond_num, next_action):
                 return True
-            unused.add(i)
+            used[i] += 1
             now_queue.pop(-1)
         elif if_can_move == -1 and now_queue != []:
             cannot[action][now_queue[-1]].add(i)
@@ -69,14 +69,23 @@ while 1:
     if count == 0:
         break
     mm = []
+    used = {}
     for i in xrange(count ** 2):
         line = sys.stdin.readline()
         line = line.strip()
-        mm.append([int(i) for i in line.split()])
+        line = [int(num) for num in line.split()]
+        flag = True
+        for j in xrange(len(mm)):
+            if line == mm[j]:
+                used[j] += 1
+                flag = False
+                break
+        if flag:
+            used[len(mm)] = 1
+            mm.append(line)
 
     # 二维数组 action, last
     cannot = [[set() for j in xrange(len(mm))] for i in xrange(4)]
-    unused = set([i for i in xrange(len(mm))])
     now_queue = []
     if_success = move(0, 0, 0, 0, 0)
     if iter_count > 1:
