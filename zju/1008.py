@@ -4,23 +4,23 @@ import sys
 
 
 def can_move(height, width, num, beyond_num, action, next_square):
-    global now_queue
+    global now_queue, cannot
     if now_queue == []:
-        return True
+        return 1
     last_square = mm[now_queue[-1]]
     if last_square[action] != next_square[(action + 2) % 4]:
-        return False
+        return -1
     if beyond_num > 1:
-        c_square_index = num - 1
+        c_square_idx = num - 1
         if action in [0, 2]:
-            c_square_index -= ((width - 1) * 2 + height * 2 - 3)
+            c_square_idx -= ((width - 1) * 2 + height * 2 - 3)
         else:
-            c_square_index -= ((height - 1) * 2 + width * 2 - 3)
-        if c_square_index >= 0 and c_square_index < num and \
-                next_square[(action + 1) % 4] != mm[now_queue[c_square_index]][(action - 1) % 4]:
-            return False
+            c_square_idx -= ((height - 1) * 2 + width * 2 - 3)
+        if c_square_idx >= 0 and c_square_idx < num and \
+                next_square[(action + 1) % 4] != mm[now_queue[c_square_idx]][(action - 1) % 4]:
+            return -2
 
-    return True
+    return 1
 
 
 def move(height, width, num, beyond_num, action):
@@ -30,7 +30,7 @@ def move(height, width, num, beyond_num, action):
     beyond_num 包含此次执行落单不足以成一行的数量
     action 此次执行的方向0, 1, 2, 3
     """
-    global unused, now_queue
+    global unused, now_queue, cannot
     if num == len(mm):
         return True
 
@@ -46,15 +46,20 @@ def move(height, width, num, beyond_num, action):
         next_beyond_num = beyond_num + 1
     next_action = action + 1 if beyond_num == 1 else action
     next_action %= 4
-    for i in unused:
-        if can_move(height, width, num, beyond_num, action, mm[i]):
+    iter_set = set(unused)
+    if now_queue != []:
+        iter_set -= cannot[action][now_queue[-1]]
+    for i in iter_set:
+        if_can_move = can_move(height, width, num, beyond_num, action, mm[i])
+        if if_can_move == 1:
             unused.discard(i)
             now_queue.append(i)
             if move(next_height, next_width, num + 1, next_beyond_num, next_action):
                 return True
             unused.add(i)
             now_queue.pop(-1)
-
+        elif if_can_move == -1 and now_queue != []:
+            cannot[action][now_queue[-1]].add(i)
 
 iter_count = 0
 while 1:
@@ -69,6 +74,8 @@ while 1:
         line = line.strip()
         mm.append([int(i) for i in line.split()])
 
+    # 二维数组 action, last
+    cannot = [[set() for j in xrange(len(mm))] for i in xrange(4)]
     unused = set([i for i in xrange(len(mm))])
     now_queue = []
     if_success = move(0, 0, 0, 0, 0)
