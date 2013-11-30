@@ -8,7 +8,9 @@ def can_move(height, width, num, beyond_num, action, next_square):
     if now_queue == []:
         return 1
     last_square = mm[now_queue[-1]]
-    if last_square[action] != next_square[(action + 2) % 4]:
+    if last_square[action] != mm[next_square][(action + 2) % 4]:
+        cannot[action][now_queue[-1]].add(next_square)
+        cannot[(action + 2) % 4][next_square].add(now_queue[-1])
         return -1
     if beyond_num > 1:
         c_square_idx = num - 1
@@ -17,7 +19,9 @@ def can_move(height, width, num, beyond_num, action, next_square):
         else:
             c_square_idx -= ((height - 1) * 2 + width * 2 - 3)
         if c_square_idx >= 0 and c_square_idx < num and \
-                next_square[(action + 1) % 4] != mm[now_queue[c_square_idx]][(action - 1) % 4]:
+                mm[next_square][(action + 1) % 4] != mm[now_queue[c_square_idx]][(action - 1) % 4]:
+            cannot[(action - 1) % 4][now_queue[c_square_idx]].add(next_square)
+            cannot[(action + 1) % 4][next_square].add(now_queue[c_square_idx])
             return -2
 
     return 1
@@ -50,7 +54,7 @@ def move(height, width, num, beyond_num, action):
     if now_queue != []:
         iter_set -= cannot[action][now_queue[-1]]
     for i in iter_set:
-        if_can_move = can_move(height, width, num, beyond_num, action, mm[i])
+        if_can_move = can_move(height, width, num, beyond_num, action, i)
         if if_can_move == 1:
             used[i] -= 1
             now_queue.append(i)
@@ -58,8 +62,6 @@ def move(height, width, num, beyond_num, action):
                 return True
             used[i] += 1
             now_queue.pop(-1)
-        elif if_can_move == -1:
-            cannot[action][now_queue[-1]].add(i)
 
 
 iter_count = 0
