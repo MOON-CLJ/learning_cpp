@@ -4,8 +4,7 @@ import sys
 
 
 def can_move(height, width, num, beyond_num, action, next_square):
-    global now_queue, cannot
-    if now_queue == []:
+    if num == 0:
         return 1
     last_square = mm[now_queue[-1]]
     if last_square[action] != mm[next_square][(action + 2) % 4]:
@@ -34,7 +33,6 @@ def move(height, width, num, beyond_num, action):
     beyond_num 包含此次执行落单不足以成一行的数量
     action 此次执行的方向0, 1, 2, 3
     """
-    global used, now_queue, cannot, count
     if num == count ** 2:
         return True
 
