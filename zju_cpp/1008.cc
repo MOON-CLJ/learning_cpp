@@ -12,12 +12,7 @@ int if_can_move(int height, int width, int num, int beyond_num, int action, int 
   if (mm[now_queue[num - 1]][action] != mm[next_square][(action + 2) % 4])
     return 0;
   if (beyond_num > 1) {
-    int c_square_idx = num - 1;
-    if (action % 2 == 0) {
-      c_square_idx -= ((width - 1) * 2 + height * 2 - 3);
-    } else {
-      c_square_idx -= ((height - 1) * 2 + width * 2 - 3);
-    }
+    int c_square_idx = num - (width + height) * 2 + 4;
     if (c_square_idx >= 0 && c_square_idx < num &&
         mm[next_square][(action + 1) % 4] != mm[now_queue[c_square_idx]][(action - 1) % 4])
       return 0;

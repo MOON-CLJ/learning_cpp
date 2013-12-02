@@ -12,11 +12,7 @@ def can_move(height, width, num, beyond_num, action, next_square):
         cannot[(action + 2) % 4][next_square].add(now_queue[-1])
         return -1
     if beyond_num > 1:
-        c_square_idx = num - 1
-        if action in [0, 2]:
-            c_square_idx -= ((width - 1) * 2 + height * 2 - 3)
-        else:
-            c_square_idx -= ((height - 1) * 2 + width * 2 - 3)
+        c_square_idx = num - (width + height) * 2 + 4
         if c_square_idx >= 0 and c_square_idx < num and \
                 mm[next_square][(action + 1) % 4] != mm[now_queue[c_square_idx]][(action - 1) % 4]:
             cannot[(action - 1) % 4][now_queue[c_square_idx]].add(next_square)
@@ -38,9 +34,9 @@ def move(height, width, num, beyond_num, action):
 
     # 下个规模
     next_height, next_width = height, width
-    if (action in [0, 2] and beyond_num == height) or (action in [1, 3] and beyond_num == width):
+    if (action % 2 == 0 and beyond_num == height) or (action % 2 == 1 and beyond_num == width):
         next_beyond_num = 1
-        if action in [0, 2]:
+        if action % 2 == 0:
             next_height += 1
         else:
             next_width += 1
