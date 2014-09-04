@@ -1,5 +1,6 @@
 *.sw[po]
 *.pyc
 *.dSYM
+*.gch
 .DS_Store
 a.out
