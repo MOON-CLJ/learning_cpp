@@ -14,8 +14,27 @@ void sort(int* l, size_t len) {
                 l[j - h] = l[j];
                 l[j] = tmp;
             }
-            if (j >= h)
-                count += 1;
+        }
+        h /= 3;
+    }
+}
+*/
+
+void sort(int* l, size_t len) {
+    int i, j, tmp, min, h = 1;
+    while (h < len / 3)
+        h = 3 * h + 1;
+    while (h >= 1) {
+        for (i = h; i < len; i++) {
+            min = i;
+            for (j = i; j >= h && l[j - h] > l[i]; j -= h)
+                min = j - h;
+            if (min != i) {
+                tmp = l[i];
+                for (j = i; j > min; j -= h)
+                    l[j] = l[j - h];
+                l[min] = tmp;
+            }
         }
         h /= 3;
     }
@@ -30,8 +49,8 @@ int main() {
         std::cout << a[i] << std::endl;
     return 0;
 }
-*/
 
+/*
 void sort(int* l, size_t len) {
     int i, j, tmp, count, h = 1;
     while (h < len / 3)
@@ -53,9 +72,10 @@ void sort(int* l, size_t len) {
     }
 }
 
+int a[10000000] = {};
+
 int main() {
-    int initlen = 100, maxlen = 1000000;
-    int a[1000000] = {};
+    int initlen = 100, maxlen = 10000000;
     int i;
     srand (time(NULL));
     while (initlen <= maxlen) {
@@ -68,3 +88,4 @@ int main() {
     }
     return 0;
 }
+*/
