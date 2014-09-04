@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "mergeSortBU.h"
 
 void merge(int* l, int* ll, int lo, int mid, int hi) {
@@ -35,9 +36,6 @@ void mergeSort(int*& l, int*& ll, size_t len) {
         ll = tmp;
         cnt += 1;
     }
-    if (cnt % 2 == 1) {
-        tmp = l;
-        l = ll;
-        ll = tmp;
-    }
+    if (cnt % 2 == 1)
+        std::copy(l, l + len, ll);
 }
