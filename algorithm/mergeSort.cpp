@@ -19,7 +19,6 @@ void merge(int* l, int* ll, int lo, int mid, int hi) {
         else
             l[k] = ll[i++];
     }
-
 }
 
 void mergeSort(int* l, int* ll, int lo, int hi) {
