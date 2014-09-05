@@ -38,13 +38,6 @@ void merge1(int* l, int* ll, int lo, int mid, int hi) {
     }
 }
 
-int min(int* x, int* y) {
-    if (x < y)
-        return x;
-    else
-        return y;
-}
-
 void sort(int* l, int* ll, size_t len, int step) {
     int k, * i, * j;
     for (i = l; i < l + len; i += step)
@@ -97,8 +90,8 @@ int max(int x, int y) {
 }
 
 int main() {
-    int i, m = 2;
-    size_t llen, len = 7;
+    int i, m = 50;
+    size_t llen, len = 1500;
     int a[len];
     for (i = 0; i < len; i++)
         a[i] = i;
