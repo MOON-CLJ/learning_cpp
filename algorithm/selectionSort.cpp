@@ -1,6 +1,7 @@
 #include <iostream>
+#include "selectionSort.h"
 
-void sort(int* l, size_t len) {
+void selectionSort(int* l, size_t len) {
     int i, j, min, tmp;
     for (i = 0; i < len - 1; i++) {
         min = i;
@@ -13,14 +14,4 @@ void sort(int* l, size_t len) {
             l[min] = tmp;
         }
     }
-}
-
-int main() {
-    int a[] = {6, 3, 1, 5, 2, 8, 7, 10, 11};
-    int i;
-    size_t len = sizeof(a) / sizeof(*a);
-    sort(a, len);
-    for (i = 0; i < len; i++)
-        std::cout << a[i] << std::endl;
-    return 0;
 }
