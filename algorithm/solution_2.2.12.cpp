@@ -90,6 +90,7 @@ int max(int x, int y) {
 }
 
 int main() {
+    // 思路还是有问题
     int i, m = 50;
     size_t llen, len = 1500;
     int a[len];
