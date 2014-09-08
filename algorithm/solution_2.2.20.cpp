@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "solution_2.2.20.h"
 
-void merge(int* l, int* p, int* pp, int lo, int mid, int hi) {
+void merge(const int* l, int* p, int* pp, int lo, int mid, int hi) {
     if (l[p[mid]] <= l[p[mid + 1]])
         return;
     int i, j, k;
@@ -29,7 +29,7 @@ int min(int x, int y) {
         return y;
 }
 
-void mergeSortBU(int* l, int* p, int* pp, size_t len) {
+void mergeSortBU(const int* l, int* p, int* pp, size_t len) {
     int i, step;
     for (step = 1; step < len; step *= 2)
         for (i = 0; i < len - step; i += step * 2)
