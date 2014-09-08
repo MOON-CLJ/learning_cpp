@@ -1,8 +1,9 @@
 #include <iostream>
 #include <algorithm>
-#include "mergeSortBU.h"
-#include "selectionSort.h"
-#include "solution_2.2.16.h"
+//#include "mergeSortBU.h"
+//#include "selectionSort.h"
+//#include "solution_2.2.16.h"
+#include "solution_2.2.19.h"
 
 /*
 int main() {
@@ -34,7 +35,6 @@ int main() {
         std::cout << a[i] << std::endl;
     return 0;
 }
-*/
 
 int main() {
     // solution_2.2.16.cpp
@@ -50,5 +50,21 @@ int main() {
         if (a[i] != i)
             std::cout << a[i] << std::endl;
 
+    return 0;
+}
+*/
+
+int main() {
+    // solution_2.2.19.cpp
+    int i, cnt = 0;
+    size_t len = 6;
+    int a[6] = {6, 5, 4, 3, 2, 1};
+    int aux[len];
+    mergeSort(a, aux, 0, len - 1, cnt);
+    for (i = 0; i < len; i++)
+        if (a[i] != i)
+            std::cout << a[i] << std::endl;
+
+    std::cout << cnt << std::endl;
     return 0;
 }
