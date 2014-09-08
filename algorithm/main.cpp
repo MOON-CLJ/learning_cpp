@@ -3,7 +3,8 @@
 //#include "mergeSortBU.h"
 //#include "selectionSort.h"
 //#include "solution_2.2.16.h"
-#include "solution_2.2.19.h"
+//#include "solution_2.2.19.h"
+#include "solution_2.2.20.h"
 
 /*
 int main() {
@@ -52,7 +53,6 @@ int main() {
 
     return 0;
 }
-*/
 
 int main() {
     // solution_2.2.19.cpp
@@ -66,5 +66,28 @@ int main() {
             std::cout << a[i] << std::endl;
 
     std::cout << cnt << std::endl;
+    return 0;
+}
+*/
+
+int main() {
+    // solution_2.2.20.cpp
+    int i;
+    size_t len = 20206;
+    int a[len];
+    for (i = 0; i < len; i++)
+        a[i] = i;
+    std::random_shuffle(&a[0], &a[len]);
+
+    int p[len];
+    for (i = 0; i < len; i++)
+        p[i] = i;
+
+    int pux[len];
+    mergeSortBU(a, p, pux, len);
+    for (i = 0; i < len; i++)
+        if (a[p[i]] != i)
+            std::cout << a[p[i]] << std::endl;
+
     return 0;
 }
