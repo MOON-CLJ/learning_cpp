@@ -4,7 +4,8 @@
 //#include "selectionSort.h"
 //#include "solution_2.2.16.h"
 //#include "solution_2.2.19.h"
-#include "solution_2.2.20.h"
+//#include "solution_2.2.20.h"
+#include "solution_2.2.22.h"
 
 /*
 int main() {
@@ -68,7 +69,6 @@ int main() {
     std::cout << cnt << std::endl;
     return 0;
 }
-*/
 
 int main() {
     // solution_2.2.20.cpp
@@ -88,6 +88,24 @@ int main() {
     for (i = 0; i < len; i++)
         if (a[p[i]] != i)
             std::cout << a[p[i]] << std::endl;
+
+    return 0;
+}
+*/
+
+int main() {
+    // solution_2.2.22.cpp
+    int i;
+    size_t len = 10013;
+    int a[len];
+    for (i = 0; i < len; i++)
+        a[i] = i;
+    std::random_shuffle(&a[0], &a[len]);
+    int aux[len];
+    mergeSort(a, aux, 0, len - 1);
+    for (i = 0; i < len; i++)
+        if (a[i] != i)
+            std::cout << a[i] << std::endl;
 
     return 0;
 }
