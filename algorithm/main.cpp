@@ -6,7 +6,8 @@
 //#include "solution_2.2.19.h"
 //#include "solution_2.2.20.h"
 //#include "solution_2.2.22.h"
-#include "quickSort.h"
+//#include "quickSort.h"
+#include "solution_2.3.5.h"
 
 
 /*
@@ -110,7 +111,6 @@ int main() {
 
     return 0;
 }
-*/
 
 int main() {
     // quickSort.cpp
@@ -121,6 +121,19 @@ int main() {
         a[i] = i;
     std::random_shuffle(&a[0], &a[len]);
     quickSort(a, len);
+    for (i = 0; i < len; i++)
+        if (a[i] != i)
+            std::cout << a[i] << std::endl;
+    return 0;
+}
+*/
+
+int main() {
+    // solution_2.3.5.cpp
+    int i;
+    size_t len = 6;
+    int a[6] = {1, 1, 0, 0, 1, 0};
+    sort(a, len);
     for (i = 0; i < len; i++)
         if (a[i] != i)
             std::cout << a[i] << std::endl;
