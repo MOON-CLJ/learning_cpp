@@ -8,17 +8,15 @@ void exch(int* l, int i, int j) {
 }
 
 int partition(int* l, int lo, int hi) {
-    int i = lo, j = hi + 1, tmp;
+    int i = lo, j = hi + 1;
     int v = l[lo];
     while (1) {
-        while (l[++i] < v) {
+        while (l[++i] < v)
             if (i == hi)
                 break;
-        }
-        while (l[--j] > v) {
+        while (l[--j] > v)
             if (j == lo)
                 break;
-        }
         if (i >= j)
             break;
         exch(l, i, j);

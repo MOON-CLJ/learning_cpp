@@ -7,7 +7,8 @@
 //#include "solution_2.2.20.h"
 //#include "solution_2.2.22.h"
 //#include "quickSort.h"
-#include "solution_2.3.5.h"
+//#include "solution_2.3.5.h"
+#include "solution_2.3.15.h"
 
 
 /*
@@ -126,7 +127,6 @@ int main() {
             std::cout << a[i] << std::endl;
     return 0;
 }
-*/
 
 int main() {
     // solution_2.3.5.cpp
@@ -137,5 +137,27 @@ int main() {
     for (i = 0; i < len; i++)
         if (a[i] != i)
             std::cout << a[i] << std::endl;
+    return 0;
+}
+*/
+
+int main() {
+    // solution_2.3.15.cpp
+    int i;
+    size_t len = 93936;
+    int a[len], aa[len];
+    for (i = 0; i < len; i++) {
+        a[i] = i;
+        aa[i] = i;
+    }
+    std::random_shuffle(&a[0], &a[len]);
+    std::random_shuffle(&aa[0], &aa[len]);
+    NutsBoltsSort(a, aa, len);
+    for (i = 0; i < len; i++) {
+        if (a[i] != i)
+            std::cout << "a: " << a[i] << std::endl;
+        if (aa[i] != i)
+            std::cout << "aa: " << aa[i] << std::endl;
+    }
     return 0;
 }
