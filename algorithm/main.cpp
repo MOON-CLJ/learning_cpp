@@ -5,7 +5,9 @@
 //#include "solution_2.2.16.h"
 //#include "solution_2.2.19.h"
 //#include "solution_2.2.20.h"
-#include "solution_2.2.22.h"
+//#include "solution_2.2.22.h"
+#include "quickSort.h"
+
 
 /*
 int main() {
@@ -91,7 +93,6 @@ int main() {
 
     return 0;
 }
-*/
 
 int main() {
     // solution_2.2.22.cpp
@@ -107,5 +108,21 @@ int main() {
         if (a[i] != i)
             std::cout << a[i] << std::endl;
 
+    return 0;
+}
+*/
+
+int main() {
+    // quickSort.cpp
+    int i;
+    size_t len = 10013;
+    int a[len];
+    for (i = 0; i < len; i++)
+        a[i] = i;
+    std::random_shuffle(&a[0], &a[len]);
+    quickSort(a, len);
+    for (i = 0; i < len; i++)
+        if (a[i] != i)
+            std::cout << a[i] << std::endl;
     return 0;
 }
