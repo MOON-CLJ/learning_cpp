@@ -6,9 +6,9 @@
 //#include "solution_2.2.19.h"
 //#include "solution_2.2.20.h"
 //#include "solution_2.2.22.h"
-//#include "quickSort.h"
+#include "quickSort.h"
 //#include "solution_2.3.5.h"
-#include "solution_2.3.15.h"
+//#include "solution_2.3.15.h"
 
 
 /*
@@ -112,11 +112,12 @@ int main() {
 
     return 0;
 }
+*/
 
 int main() {
     // quickSort.cpp
     int i;
-    size_t len = 10013;
+    size_t len = 10011;
     int a[len];
     for (i = 0; i < len; i++)
         a[i] = i;
@@ -128,6 +129,7 @@ int main() {
     return 0;
 }
 
+/*
 int main() {
     // solution_2.3.5.cpp
     int i;
@@ -139,7 +141,6 @@ int main() {
             std::cout << a[i] << std::endl;
     return 0;
 }
-*/
 
 int main() {
     // solution_2.3.15.cpp
@@ -161,3 +162,4 @@ int main() {
     }
     return 0;
 }
+*/
