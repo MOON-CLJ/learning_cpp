@@ -117,7 +117,7 @@ int main() {
 int main() {
     // quickSort.cpp
     int i;
-    size_t len = 10011;
+    size_t len = 10013;
     int a[len];
     for (i = 0; i < len; i++)
         a[i] = i;
