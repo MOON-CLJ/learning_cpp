@@ -15,11 +15,13 @@ void prepare_median(int * l, int lo, int hi) {
         exch(l, lo, hi);
     if (l[lo] < l[i])
         exch(l, lo, i);
+    if (lo + 1 < i)
+        exch(l, lo + 1, i);
 }
 
 int partition(int* l, int lo, int hi) {
-    int i = lo, j = hi + 1;
     prepare_median(l, lo, hi);
+    int i = lo + 1, j = hi;
     int v = l[lo];
     while (1) {
         while (l[++i] < v);
