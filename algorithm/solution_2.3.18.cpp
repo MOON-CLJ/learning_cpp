@@ -7,17 +7,19 @@ void exch(int* l, int i, int j) {
     l[j] = tmp;
 }
 
-int partition(int* l, int lo, int hi) {
-    int i, j = hi + 1;
-    i = (lo + hi) / 2;
+void prepare_median(int * l, int lo, int hi) {
+    int i = (lo + hi) / 2;
     if (l[lo] < l[i])
         exch(l, lo, i);
     if (l[lo] > l[hi])
         exch(l, lo, hi);
     if (l[lo] < l[i])
         exch(l, lo, i);
+}
 
-    i = lo;
+int partition(int* l, int lo, int hi) {
+    int i = lo, j = hi + 1;
+    prepare_median(l, lo, hi);
     int v = l[lo];
     while (1) {
         while (l[++i] < v);
