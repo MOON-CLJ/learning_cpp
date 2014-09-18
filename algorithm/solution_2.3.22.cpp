@@ -13,7 +13,7 @@ std::pair<int, int> partition(int* l, int lo, int hi) {
     q = j;
     int v = l[lo];
     while (1) {
-        while (i <= q) {
+        while (i <= q && l[i] <= v) {
             if (l[i] == v) {
                 if (i == p) {
                     i++;
@@ -22,12 +22,10 @@ std::pair<int, int> partition(int* l, int lo, int hi) {
                 else
                     exch(l, i, p++);
             }
-            else if (l[i] < v)
-                i++;
             else
-                break;
+                i++;
         }
-        while (j >= p) {
+        while (j >= p && l[j] >= v) {
             if (l[j] == v) {
                 if (j == q) {
                     j--;
@@ -36,10 +34,8 @@ std::pair<int, int> partition(int* l, int lo, int hi) {
                 else
                     exch(l, j, q--);
             }
-            else if (l[j] > v)
-                j--;
             else
-                break;
+                j--;
         }
         if (i > j)
             break;
