@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <time.h>
 //#include "mergeSortBU.h"
 //#include "selectionSort.h"
 //#include "solution_2.2.16.h"
@@ -116,15 +117,22 @@ int main() {
 
 int main() {
     // quickSort.cpp
-    int i;
-    size_t len = 10013;
-    int a[len];
+    int i, j;
+    size_t len = 11093;
+    size_t extra_len = 10000;
+    int a[len + extra_len];
     for (i = 0; i < len; i++)
         a[i] = i;
+    srand(time(NULL));
+    for (i = len; i < len + extra_len; i++) {
+        j = rand() % len;
+        a[i] = a[j];
+    }
+    len += extra_len;
     std::random_shuffle(&a[0], &a[len]);
     quickSort(a, len);
-    for (i = 0; i < len; i++)
-        if (a[i] != i)
+    for (i = 0; i < len - 1; i++)
+        if (a[i] > a[i + 1])
             std::cout << a[i] << std::endl;
     return 0;
 }
