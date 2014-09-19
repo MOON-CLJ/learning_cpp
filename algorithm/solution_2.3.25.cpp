@@ -46,7 +46,7 @@ void sort(int* l, int lo, int hi, int M) {
     sort(l, j + 1, hi, M);
 }
 
-void quickSort(int* l, size_t len) {
+void quickSort(int* l, size_t len, int M) {
     std::random_shuffle(&l[0], &l[len]);
     int i, max=0;
     for (i = 1; i < len; i++)
@@ -54,5 +54,5 @@ void quickSort(int* l, size_t len) {
             max = i;
     if (max != len - 1)
         exch(l, max, len - 1);
-    sort(l, 0, len - 1, 3);
+    sort(l, 0, len - 1, M);
 }
