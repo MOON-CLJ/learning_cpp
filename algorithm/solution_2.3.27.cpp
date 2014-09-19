@@ -1,5 +1,5 @@
 #include <iostream>
-#include "quickSort1.h"
+#include "quickSort.h"
 
 void exch(int* l, int i, int j) {
     int tmp = l[i];
@@ -36,17 +36,16 @@ void insertionSort(int* l, int lo, int hi) {
     }
 }
 
-void sort(int* l, int lo, int hi, int M) {
-    if (lo + M >= hi) {
-        insertionSort(l, lo, hi);
+void sort(int* l, int lo, int hi) {
+    if (lo + 15 >= hi) {
         return;
     }
     int j = partition(l, lo, hi);
-    sort(l, lo, j - 1, M);
-    sort(l, j + 1, hi, M);
+    sort(l, lo, j - 1);
+    sort(l, j + 1, hi);
 }
 
-void quickSort(int* l, size_t len, int M) {
+void quickSort(int* l, size_t len) {
     std::random_shuffle(&l[0], &l[len]);
     int i, max=0;
     for (i = 1; i < len; i++)
@@ -54,5 +53,6 @@ void quickSort(int* l, size_t len, int M) {
             max = i;
     if (max != len - 1)
         exch(l, max, len - 1);
-    sort(l, 0, len - 1, M);
+    sort(l, 0, len - 1);
+    insertionSort(l, 0, len - 1);
 }
