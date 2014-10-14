@@ -5,5 +5,5 @@
 fixedCapacityStackOfStrings::fixedCapacityStackOfStrings(int cap) : s(cap), n(0) {}
 int fixedCapacityStackOfStrings::size() {return n;}
 bool fixedCapacityStackOfStrings::isEmpty() {return n == 0;}
-void fixedCapacityStackOfStrings::push(std::string item) {
-}
+void fixedCapacityStackOfStrings::push(std::string item) {s[n++] = item;}
+std::string fixedCapacityStackOfStrings::pop() {return s[--n];}
