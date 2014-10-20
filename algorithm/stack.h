@@ -38,6 +38,17 @@ public:
     void setFirst(Node<T>* newFirst) {
         first = newFirst;
     }
+    void removeAfter(Node<T>* node) {
+        if (node == NULL || node->next == NULL)
+            return;
+        node->next = node->next->next;
+    }
+    void insertAfter(Node<T>* node, Node<T>* insert) {
+        if (node == NULL || insert == NULL)
+            return;
+        insert->next = node->next;
+        node->next = insert;
+    }
 
 private:
     Node<T> * first;

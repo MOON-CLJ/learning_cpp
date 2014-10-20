@@ -26,12 +26,12 @@ void cpStack(stack<int>& from, stack<int>& to) {
 void cpStack1(stack<int>& from, stack<int>& to) {
     Node<int>* fromCurr = from.getFirst();
     Node<int>* toFirst = NULL;
-    Node<int>** toTail = &toFirst;
+    Node<int>** toTailRef = &toFirst;
     while (fromCurr) {
-        *toTail = new Node<int>;
-        (*toTail)->val = fromCurr->val;
-        (*toTail)->next = NULL;
-        toTail = &((*toTail)->next);
+        *toTailRef = new Node<int>;
+        (*toTailRef)->val = fromCurr->val;
+        (*toTailRef)->next = NULL;
+        toTailRef = &((*toTailRef)->next);
         fromCurr = fromCurr->next;
     }
     to.setFirst(toFirst);
