@@ -46,5 +46,20 @@ int main() {
     mystack.insertAfter(NULL, NULL);
     printStack(mystack);
 
+    newNode = new Node<int>;
+    newNode->val = 8;
+    newNode->next = NULL;
+    curr = mystack.getFirst();
+    while (curr->val != 8)
+        curr = curr->next;
+    mystack.insertAfter(curr, newNode);
+    printStack(mystack);
+
+    mystack.remove(8);
+    printStack(mystack);
+
+    mystack.remove(88);
+    printStack(mystack);
+
     return 0;
 }

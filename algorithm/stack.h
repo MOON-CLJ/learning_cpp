@@ -49,6 +49,15 @@ public:
         insert->next = node->next;
         node->next = insert;
     }
+    void remove(const T& val) {
+        Node<T>* curr = first;
+        while (curr != NULL && curr->next != NULL) {
+            if (curr->next->val == val)
+                curr->next = curr->next->next;
+            else
+                curr = curr->next;
+        }
+    }
 
 private:
     Node<T> * first;
