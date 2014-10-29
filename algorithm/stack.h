@@ -19,14 +19,14 @@ public:
         newNode->val = item;
         newNode->next = first;
         first = newNode;
-        N++;
+        ++N;
     }
     T pop() {
         Node<T>* oldFirst = first;
         T item = first->val;
         first = first->next;
         delete oldFirst;
-        N--;
+        --N;
         return item;
     }
     T peek() {
@@ -41,19 +41,28 @@ public:
     void removeAfter(Node<T>* node) {
         if (node == NULL || node->next == NULL)
             return;
-        node->next = node->next->next;
+        Node<T>* toRemove = node->next;
+        node->next = toRemove->next;
+        delete toRemove;
+        --N;
     }
     void insertAfter(Node<T>* node, Node<T>* insert) {
         if (node == NULL || insert == NULL)
             return;
         insert->next = node->next;
         node->next = insert;
+        ++N;
     }
     void remove(const T& val) {
         Node<T>* curr = first;
+        Node<T>* toRemove;
         while (curr != NULL && curr->next != NULL) {
-            if (curr->next->val == val)
-                curr->next = curr->next->next;
+            if (curr->next->val == val) {
+                toRemove = curr->next;
+                curr->next = toRemove->next;
+                delete toRemove;
+                --N;
+            }
             else
                 curr = curr->next;
         }
