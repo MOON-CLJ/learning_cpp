@@ -2,7 +2,6 @@
 
 int main() {
     int i;
-    int len = 10;
     int a[] = {3, 2, 1, 7, 6, 5, 9, 4, 10, 8};
 
     MaxPQ<int> pq(10);
