@@ -6,6 +6,14 @@ public:
     MaxPQ(int MaxN): N(0) {
         pq = new T[MaxN + 1];
     }
+    MaxPQ(int MaxN, int N, T* init): N(N) {
+        int i;
+        pq = new T[MaxN + 1];
+        for (i = 0; i < N; i++)
+            pq[i + 1] = init[i];
+        for (i = N / 2; i >= 1; i--)
+            sink(i);
+    }
     bool isEmpty() {
         return N == 0;
     }
