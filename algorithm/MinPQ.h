@@ -3,13 +3,13 @@
 template<typename T>
 class MinPQ {
 public:
-    MinPQ(int MaxN): N(0) {
+    MinPQ(size_t MaxN): N(0) {
         pq = new T[MaxN + 1];
     }
     bool isEmpty() {
         return N == 0;
     }
-    int size() { return N; }
+    size_t size() { return N; }
     void insert(T v) {
         pq[++N] = v;
         swin(N);
@@ -23,7 +23,7 @@ public:
 
 private:
     T* pq;
-    int N;
+    size_t N;
 
     bool more(int i, int j) {
         return pq[i] > pq[j];

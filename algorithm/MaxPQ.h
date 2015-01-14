@@ -3,10 +3,10 @@
 template<typename T>
 class MaxPQ {
 public:
-    MaxPQ(int MaxN): N(0) {
+    MaxPQ(int MaxN): N(0), MaxN(MaxN) {
         pq = new T[MaxN + 1];
     }
-    MaxPQ(int MaxN, int N, T* init): N(N) {
+    MaxPQ(int MaxN, int N, T* init): N(N), MaxN(MaxN) {
         int i;
         pq = new T[MaxN + 1];
         for (i = 0; i < N; i++)
@@ -19,6 +19,8 @@ public:
     }
     int size() { return N; }
     void insert(T v) {
+        if (N == MaxN)
+            resize(2 * MaxN);
         pq[++N] = v;
         swin(N);
     }
@@ -26,13 +28,25 @@ public:
         T max = pq[1];
         exch(1, N--);
         sink(1);
+        if (N > 0 && N == MaxN / 4)
+            resize(MaxN / 2);
         return max;
     }
+
 
 private:
     T* pq;
     int N;
+    int MaxN;
 
+    void resize(size_t NewMaxN) {
+        T* new_pq = new T[NewMaxN + 1];
+
+        memcpy(new_pq, pq, (N + 1) * sizeof(T));
+        MaxN = NewMaxN;
+        delete[] pq;
+        pq = new_pq;
+    }
     bool less(int i, int j) {
         return pq[i] < pq[j];
     }
