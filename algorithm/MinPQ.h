@@ -25,23 +25,23 @@ private:
     T* pq;
     size_t N;
 
-    bool more(int i, int j) {
+    bool more(size_t i, size_t j) {
         return pq[i] > pq[j];
     }
-    void exch(int i, int j) {
+    void exch(size_t i, size_t j) {
         T tmp = pq[i];
         pq[i] = pq[j];
         pq[j] = tmp;
     }
-    void swin(int k) {
+    void swin(size_t k) {
         while (k > 1 && more(k/2, k)) {
             exch(k, k/2);
             k = k/2;
         }
     }
-    void sink(int k) {
+    void sink(size_t k) {
         while (2*k <= N) {
-            int j = 2*k;
+            size_t j = 2*k;
             if (j < N && more(j, j+1)) j++;
             if (!more(k, j)) break;
             exch(k, j);

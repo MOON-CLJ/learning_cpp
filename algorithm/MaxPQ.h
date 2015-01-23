@@ -3,11 +3,11 @@
 template<typename T>
 class MaxPQ {
 public:
-    MaxPQ(int MaxN): N(0), MaxN(MaxN) {
+    MaxPQ(size_t MaxN): N(0), MaxN(MaxN) {
         pq = new T[MaxN + 1];
     }
-    MaxPQ(int MaxN, int N, T* init): N(N), MaxN(MaxN) {
-        int i;
+    MaxPQ(size_t MaxN, size_t N, T* init): N(N), MaxN(MaxN) {
+        size_t i;
         pq = new T[MaxN + 1];
         for (i = 0; i < N; i++)
             pq[i + 1] = init[i];
@@ -17,7 +17,7 @@ public:
     bool isEmpty() {
         return N == 0;
     }
-    int size() { return N; }
+    size_t size() { return N; }
     void insert(T v) {
         if (N == MaxN)
             resize(2 * MaxN);
@@ -36,8 +36,8 @@ public:
 
 private:
     T* pq;
-    int N;
-    int MaxN;
+    size_t N;
+    size_t MaxN;
 
     void resize(size_t NewMaxN) {
         T* new_pq = new T[NewMaxN + 1];
@@ -47,23 +47,23 @@ private:
         delete[] pq;
         pq = new_pq;
     }
-    bool less(int i, int j) {
+    bool less(size_t i, size_t j) {
         return pq[i] < pq[j];
     }
-    void exch(int i, int j) {
+    void exch(size_t i, size_t j) {
         T tmp = pq[i];
         pq[i] = pq[j];
         pq[j] = tmp;
     }
-    void swin(int k) {
+    void swin(size_t k) {
         while (k > 1 && less(k/2, k)) {
             exch(k, k/2);
             k = k/2;
         }
     }
-    void sink(int k) {
+    void sink(size_t k) {
         while (2*k <= N) {
-            int j = 2*k;
+            size_t j = 2*k;
             if (j < N && less(j, j+1)) j++;
             if (!less(k, j)) break;
             exch(k, j);
