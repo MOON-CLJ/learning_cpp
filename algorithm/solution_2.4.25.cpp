@@ -19,7 +19,7 @@ struct X {
 
 int main() {
     int i;
-    const int N = 1000000;
+    const int N = 100;
     MinPQ<X> pq(N);
     for (i = 0; i <= N; i++)
         pq.insert(X(i, 0));
@@ -36,7 +36,7 @@ int main() {
             last_j = tmp.j;
         } else {
             if (!(last_i == tmp.j && last_j == tmp.i)) {
-                std::cout << "<<-- -->>" << std::endl;
+                std::cout << "-<-<-< >->->-" << std::endl;
                 std::cout << last_val << " " << last_i << " " << last_j << std::endl;
                 std::cout << tmp.val << " " << tmp.i << " " << tmp.j << std::endl;
             }
