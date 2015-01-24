@@ -3,7 +3,7 @@
 template<typename T>
 class MinPQ {
 public:
-    MinPQ(size_t MaxN): N(0) {
+    MinPQ(size_t MaxN): N(0), MaxN(MaxN) {
         pq = new T[MaxN + 1];
     }
     bool isEmpty() {
@@ -11,6 +11,8 @@ public:
     }
     size_t size() { return N; }
     void insert(T v) {
+        if (N == MaxN)
+            resize(2 * MaxN);
         pq[++N] = v;
         swin(N);
     }
@@ -18,12 +20,24 @@ public:
         T min = pq[1];
         exch(1, N--);
         sink(1);
+        if (N > 0 && N == MaxN / 4)
+            resize(MaxN / 2);
         return min;
     }
 
 private:
     T* pq;
     size_t N;
+    size_t MaxN;
+
+    void resize(size_t NewMaxN) {
+        T* new_pq = new T[NewMaxN + 1];
+
+        memcpy(new_pq, pq, (N + 1) * sizeof(T));
+        MaxN = NewMaxN;
+        delete[] pq;
+        pq = new_pq;
+    }
 
     bool more(size_t i, size_t j) {
         return pq[i] > pq[j];
