@@ -64,7 +64,7 @@ private:
     void sink(size_t k) {
         while (2*k <= N) {
             size_t j = 2*k;
-            if (j < N && less(j, j+1)) j++;
+            if (j < N && less(j, j+1)) ++j;
             if (!less(k, j)) break;
             exch(k, j);
             k = j;

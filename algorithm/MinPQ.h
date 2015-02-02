@@ -48,18 +48,26 @@ private:
         pq[j] = tmp;
     }
     void swin(size_t k) {
+        int first_val = pq[k];
+        int last_idx = k;
         while (k > 1 && more(k/2, k)) {
-            exch(k, k/2);
+            pq[last_idx] = pq[k/2];
+            last_idx = k/2;
             k = k/2;
         }
+        pq[last_idx] = first_val;
     }
     void sink(size_t k) {
+        int first_val = pq[k];
+        int last_idx = k;
         while (2*k <= N) {
             size_t j = 2*k;
-            if (j < N && more(j, j+1)) j++;
-            if (!more(k, j)) break;
-            exch(k, j);
+            if (j < N && more(j, j+1)) ++j;
+            if (!(first_val > pq[j])) break;
+            pq[last_idx] = pq[j];
+            last_idx = j;
             k = j;
         }
+        pq[last_idx] = first_val;
     }
 };
