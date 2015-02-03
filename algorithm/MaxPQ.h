@@ -33,7 +33,6 @@ public:
         return max;
     }
 
-
 private:
     T* pq;
     size_t N;

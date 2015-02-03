@@ -6,6 +6,14 @@ public:
     MinPQ(size_t MaxN): N(0), MaxN(MaxN) {
         pq = new T[MaxN + 1];
     }
+    MinPQ(size_t MaxN, size_t N, T* init): N(N), MaxN(MaxN) {
+        size_t i;
+        pq = new T[MaxN + 1];
+        for (i = 0; i < N; i++)
+            pq[i + 1] = init[i];
+        for (i = N / 2; i >= 1; i--)
+            sink(i);
+    }
     bool isEmpty() {
         return N == 0;
     }
