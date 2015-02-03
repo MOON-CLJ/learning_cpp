@@ -32,6 +32,9 @@ public:
             resize(MaxN / 2);
         return max;
     }
+    T max() {
+        return pq[1];
+    }
 
 private:
     T* pq;
